@@ -15,7 +15,7 @@
 ![License](https://img.shields.io/badge/许可-参见%20LICENSE-2EA44F)  
 ![English](https://img.shields.io/badge/docs-English-EE6677)
 
-![SpineLove 主界面](screenshot_main.png)
+![SpineLove 主界面](333.png)
 
 ---
 
