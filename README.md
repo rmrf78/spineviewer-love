@@ -8,7 +8,6 @@
 >
 > ## 程序会自动筛选出相关资源，列在左边「选择文件夹」下面
 
-https://github.com/user-attachments/assets/6327d244-0ec3-444c-b5fd-53a2ca7a20b6
 ![Platform](https://img.shields.io/badge/平台-Windows%2010%2B-0078D6?logo=windows&logoColor=white)  
 ![Renderer](https://img.shields.io/badge/渲染-Direct3D%2011-7B4FFF?logo=microsoft)  
 ![Spine](https://img.shields.io/badge/Spine-2.1%20→%204.2-FF6E1F)  
