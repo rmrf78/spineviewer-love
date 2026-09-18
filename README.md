@@ -15,7 +15,9 @@
 ![License](https://img.shields.io/badge/许可-参见%20LICENSE-2EA44F)  
 ![English](https://img.shields.io/badge/docs-English-EE6677)
 
-[▶ 点击播放 SpineLoveEX 演示视频](https://github.com/yihkllo/spineviewer-love/raw/refs/heads/main/1.mp4)
+
+
+
 
 ---
 
