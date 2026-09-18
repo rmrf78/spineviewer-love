@@ -1,38 +1,8 @@
-/******************************************************************************
- * Spine Runtimes License Agreement
- * Last updated April 5, 2025. Replaces all prior versions.
- *
- * Copyright (c) 2013-2025, Esoteric Software LLC
- *
- * Integration of the Spine Runtimes into software or otherwise creating
- * derivative works of the Spine Runtimes is permitted under the terms and
- * conditions of Section 2 of the Spine Editor License Agreement:
- * http://esotericsoftware.com/spine-editor-license
- *
- * Otherwise, it is permitted to integrate the Spine Runtimes into software
- * or otherwise create derivative works of the Spine Runtimes (collectively,
- * "Products"), provided that each user of the Products must obtain their own
- * Spine Editor license and redistribution of the Products in any form must
- * include this license and copyright notice.
- *
- * THE SPINE RUNTIMES ARE PROVIDED BY ESOTERIC SOFTWARE LLC "AS IS" AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ESOTERIC SOFTWARE LLC BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
- * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
-
 #include <spine/MathUtil.h>
 #include <math.h>
 #include <stdlib.h>
 #include <cmath>
 
-// Required for division by 0 in _isNaN on MSVC
 #ifdef _MSC_VER
 #pragma warning(disable : 4723)
 #endif
@@ -62,8 +32,6 @@ float MathUtil::fmod(float a, float b) {
 	return (float) ::fmod(a, b);
 }
 
-/// Returns atan2 in radians, faster but less accurate than Math.Atan2. Average error of 0.00231 radians (0.1323
-/// degrees), largest error of 0.00488 radians (0.2796 degrees).
 float MathUtil::atan2(float y, float x) {
 	return (float) ::atan2(y, x);
 }
@@ -72,12 +40,10 @@ float MathUtil::atan2Deg(float y, float x) {
 	return MathUtil::atan2(y, x) * MathUtil::Rad_Deg;
 }
 
-/// Returns the cosine in radians from a lookup table.
 float MathUtil::cos(float radians) {
 	return (float) ::cos(radians);
 }
 
-/// Returns the sine in radians from a lookup table.
 float MathUtil::sin(float radians) {
 	return (float) ::sin(radians);
 }
@@ -90,12 +56,10 @@ float MathUtil::acos(float v) {
 	return (float) ::acos(v);
 }
 
-/// Returns the sine in radians from a lookup table.
 float MathUtil::sinDeg(float degrees) {
 	return (float) ::sin(degrees * MathUtil::Deg_Rad);
 }
 
-/// Returns the cosine in radians from a lookup table.
 float MathUtil::cosDeg(float degrees) {
 	return (float) ::cos(degrees * MathUtil::Deg_Rad);
 }

@@ -1,0 +1,11 @@
+Qt 6.8.3 is distributed as dynamically linked libraries.
+Copyright (C) The Qt Company Ltd. and other contributors.
+Qt libraries in this package are distributed under the GNU Lesser General
+Public License version 3, with the applicable third-party exceptions and notices.
+The LGPL and GPL texts are included in this directory.
+Qt source code and third-party notices for this release are available at:
+https://download.qt.io/archive/qt/6.8/6.8.3/single/
+https://code.qt.io/cgit/qt/qtbase.git/tree/?h=v6.8.3
+https://code.qt.io/cgit/qt/qtdeclarative.git/tree/?h=v6.8.3
+The application source and build instructions are provided with this release.
+Users may replace the dynamically linked Qt libraries with compatible builds.

@@ -1,32 +1,3 @@
-/******************************************************************************
- * Spine Runtimes License Agreement
- * Last updated July 28, 2023. Replaces all prior versions.
- *
- * Copyright (c) 2013-2023, Esoteric Software LLC
- *
- * Integration of the Spine Runtimes into software or otherwise creating
- * derivative works of the Spine Runtimes is permitted under the terms and
- * conditions of Section 2 of the Spine Editor License Agreement:
- * http://esotericsoftware.com/spine-editor-license
- *
- * Otherwise, it is permitted to integrate the Spine Runtimes into software or
- * otherwise create derivative works of the Spine Runtimes (collectively,
- * "Products"), provided that each user of the Products must obtain their own
- * Spine Editor license and redistribution of the Products in any form must
- * include this license and copyright notice.
- *
- * THE SPINE RUNTIMES ARE PROVIDED BY ESOTERIC SOFTWARE LLC "AS IS" AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ESOTERIC SOFTWARE LLC BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
- * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THE
- * SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
-
 #include <spine/Triangulator.h>
 
 #include <spine/MathUtil.h>
@@ -61,10 +32,9 @@ Vector<int> &Triangulator::triangulate(Vector<float> &vertices) {
 	triangles.ensureCapacity(MathUtil::max((int) 0, (int) vertexCount - 2) << 2);
 
 	while (vertexCount > 3) {
-		// Find ear tip.
+
 		size_t previous = vertexCount - 1, i = 0, next = 1;
 
-		// outer:
 		while (true) {
 			if (!isConcaveArray[i]) {
 				int p1 = indices[previous] << 1, p2 = indices[i] << 1, p3 = indices[next] << 1;
@@ -79,7 +49,7 @@ Vector<int> &Triangulator::triangulate(Vector<float> &vertices) {
 					if (positiveArea(p3x, p3y, p1x, p1y, vx, vy)) {
 						if (positiveArea(p1x, p1y, p2x, p2y, vx, vy)) {
 							if (positiveArea(p2x, p2y, p3x, p3y, vx, vy)) {
-								goto break_outer;// break outer;
+								goto break_outer;
 							}
 						}
 					}
@@ -101,7 +71,6 @@ Vector<int> &Triangulator::triangulate(Vector<float> &vertices) {
 			next = (next + 1) % vertexCount;
 		}
 
-		// Cut ear tip.
 		triangles.add(indices[(vertexCount + i - 1) % vertexCount]);
 		triangles.add(indices[i]);
 		triangles.add(indices[(i + 1) % vertexCount]);
@@ -141,7 +110,6 @@ Vector<Vector<float> *> &Triangulator::decompose(Vector<float> &vertices, Vector
 	Vector<float> *polygon = _polygonPool.obtain();
 	polygon->clear();
 
-	// Merge subsequent triangles if they form a triangle fan.
 	int fanBaseIndex = -1, lastwinding = 0;
 	for (size_t i = 0, n = triangles.size(); i < n; i += 3) {
 		int t1 = triangles[i] << 1, t2 = triangles[i + 1] << 1, t3 = triangles[i + 2] << 1;
@@ -149,7 +117,6 @@ Vector<Vector<float> *> &Triangulator::decompose(Vector<float> &vertices, Vector
 		float x2 = vertices[t2], y2 = vertices[t2 + 1];
 		float x3 = vertices[t3], y3 = vertices[t3 + 1];
 
-		// If the base of the last triangle is the same as this triangle, check if they form a convex polygon (triangle fan).
 		bool merged = false;
 		if (fanBaseIndex == t1) {
 			size_t o = polygon->size() - 4;
@@ -164,7 +131,6 @@ Vector<Vector<float> *> &Triangulator::decompose(Vector<float> &vertices, Vector
 			}
 		}
 
-		// Otherwise make this triangle the new base.
 		if (!merged) {
 			if (polygon->size() > 0) {
 				convexPolygons.add(polygon);
@@ -197,7 +163,6 @@ Vector<Vector<float> *> &Triangulator::decompose(Vector<float> &vertices, Vector
 		convexPolygonsIndices.add(polygonIndices);
 	}
 
-	// Go through the list of polygons and try to merge the remaining triangles with the found triangle fans.
 	for (size_t i = 0, n = convexPolygons.size(); i < n; ++i) {
 		polygonIndices = convexPolygonsIndices[i];
 
@@ -250,7 +215,6 @@ Vector<Vector<float> *> &Triangulator::decompose(Vector<float> &vertices, Vector
 		}
 	}
 
-	// Remove empty polygons that resulted from the merge step above.
 	for (int i = (int) convexPolygons.size() - 1; i >= 0; --i) {
 		polygon = convexPolygons[i];
 		if (polygon->size() == 0) {

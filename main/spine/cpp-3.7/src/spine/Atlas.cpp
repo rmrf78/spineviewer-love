@@ -1,32 +1,3 @@
-/******************************************************************************
- * Spine Runtimes License Agreement
- * Last updated May 1, 2019. Replaces all prior versions.
- *
- * Copyright (c) 2013-2019, Esoteric Software LLC
- *
- * Integration of the Spine Runtimes into software or otherwise creating
- * derivative works of the Spine Runtimes is permitted under the terms and
- * conditions of Section 2 of the Spine Editor License Agreement:
- * http://esotericsoftware.com/spine-editor-license
- *
- * Otherwise, it is permitted to integrate the Spine Runtimes into software
- * or otherwise create derivative works of the Spine Runtimes (collectively,
- * "Products"), provided that each user of the Products must obtain their own
- * Spine Editor license and redistribution of the Products in any form must
- * include this license and copyright notice.
- *
- * THIS SOFTWARE IS PROVIDED BY ESOTERIC SOFTWARE LLC "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN
- * NO EVENT SHALL ESOTERIC SOFTWARE LLC BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES, BUSINESS
- * INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
-
 #include <spine/Atlas.h>
 #include <ctype.h>
 #include <spine/extension.h>
@@ -44,8 +15,6 @@ void spAtlasPage_dispose(spAtlasPage* self) {
 	FREE(self);
 }
 
-/**/
-
 spAtlasRegion* spAtlasRegion_create() {
 	return NEW(spAtlasRegion);
 }
@@ -56,8 +25,6 @@ void spAtlasRegion_dispose(spAtlasRegion* self) {
 	FREE(self->pads);
 	FREE(self);
 }
-
-/**/
 
 typedef struct {
 	const char* begin;
@@ -74,12 +41,10 @@ static void trim(Str* str) {
 	str->end++;
 }
 
-/* Tokenize string without modification. Returns 0 on failure. */
 static int readLine(const char** begin, const char* end, Str* str) {
 	if (*begin == end) return 0;
 	str->begin = *begin;
 
-	/* Find next delimiter. */
 	while (*begin != end && **begin != '\n')
 		(*begin)++;
 
@@ -90,7 +55,6 @@ static int readLine(const char** begin, const char* end, Str* str) {
 	return 1;
 }
 
-/* Moves str->begin past the first occurence of c. Returns 0 on failure. */
 static int beginPast(Str* str, char c) {
 	const char* begin = str->begin;
 	while (1) {
@@ -103,7 +67,6 @@ static int beginPast(Str* str, char c) {
 	return 1;
 }
 
-/* Returns 0 on failure. */
 static int readValue(const char** begin, const char* end, Str* str) {
 	readLine(begin, end, str);
 	if (!beginPast(str, ':')) return 0;
@@ -111,7 +74,6 @@ static int readValue(const char** begin, const char* end, Str* str) {
 	return 1;
 }
 
-/* Returns the number of tuple values read (1, 2, 4, or 0 for failure). */
 static int readTuple(const char** begin, const char* end, Str tuple[]) {
 	int i;
 	Str str = { NULL, NULL };
@@ -202,7 +164,7 @@ spAtlas* spAtlas_create(const char* begin, int length, const char* dir, void* re
 			switch (readTuple(&begin, end, tuple)) {
 			case 0:
 				return abortAtlas(self);
-			case 2: /* size is only optional for an atlas packed with an old TexturePacker. */
+			case 2:
 				page->width = toInt(tuple);
 				page->height = toInt(tuple + 1);
 				if (!readTuple(&begin, end, tuple)) return abortAtlas(self);
@@ -268,7 +230,7 @@ spAtlas* spAtlas_create(const char* begin, int length, const char* dir, void* re
 
 			count = readTuple(&begin, end, tuple);
 			if (!count) return abortAtlas(self);
-			if (count == 4) { /* split is optional */
+			if (count == 4) {
 				region->splits = MALLOC(int, 4);
 				region->splits[0] = toInt(tuple);
 				region->splits[1] = toInt(tuple + 1);
@@ -277,7 +239,7 @@ spAtlas* spAtlas_create(const char* begin, int length, const char* dir, void* re
 
 				count = readTuple(&begin, end, tuple);
 				if (!count) return abortAtlas(self);
-				if (count == 4) { /* pad is optional, but only present with splits */
+				if (count == 4) {
 					region->pads = MALLOC(int, 4);
 					region->pads[0] = toInt(tuple);
 					region->pads[1] = toInt(tuple + 1);
@@ -311,11 +273,10 @@ spAtlas* spAtlas_createFromFile(const char* path, void* rendererObject) {
 
 	spAtlas* atlas = 0;
 
-	/* Get directory from atlas path. */
 	const char* lastForwardSlash = strrchr(path, '/');
 	const char* lastBackwardSlash = strrchr(path, '\\');
 	const char* lastSlash = lastForwardSlash > lastBackwardSlash ? lastForwardSlash : lastBackwardSlash;
-	if (lastSlash == path) lastSlash++; /* Never drop starting slash. */
+	if (lastSlash == path) lastSlash++;
 	dirLength = (int)(lastSlash ? lastSlash - path : 0);
 	dir = MALLOC(char, dirLength + 1);
 	memcpy(dir, path, dirLength);

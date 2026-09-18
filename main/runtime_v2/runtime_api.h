@@ -4,12 +4,14 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <array>
 
 namespace sl_runtime_v2 {
 
 enum class RuntimeKind
 {
 	Cpp21,
+	Cpp31,
 	Cpp34,
 	Cpp35,
 	Cpp36,
@@ -62,14 +64,25 @@ struct Vertex
 	Color color;
 };
 
+struct MaskDrawCommand
+{
+	unsigned long long textureId = 0;
+	bool premultipliedAlpha = false;
+	std::vector<Vertex> vertices;
+	std::vector<unsigned short> indices;
+};
+
 struct DrawCommand
 {
 	unsigned long long textureId = 0;
 	std::string slotName;
+	std::string attachmentName;
 	BlendMode blendMode = BlendMode::Normal;
 	bool premultipliedAlpha = false;
+	bool invertedMask = false;
 	std::vector<Vertex> vertices;
 	std::vector<unsigned short> indices;
+	std::vector<MaskDrawCommand> masks;
 };
 
 struct TextureInfo
@@ -86,6 +99,23 @@ struct Frame
 	int width = 0;
 	int height = 0;
 	std::vector<DrawCommand> draws;
+};
+
+struct AnimationEvent
+{
+	std::string name;
+	std::string stringValue;
+	int intValue = 0;
+	float floatValue = 0.0f;
+	float time = 0.0f;
+};
+
+enum class SlotAttachmentMode
+{
+	Preserve,
+	SetupIfEmpty,
+	NamedIfEmpty,
+	Clear,
 };
 
 class IRuntime
@@ -106,14 +136,30 @@ public:
 	virtual const std::vector<std::string>& SlotCatalog() const noexcept = 0;
 	virtual const std::vector<TextureInfo>& TextureInfos() const noexcept = 0;
 	virtual void StartMotion(const char* name, bool loop) = 0;
+	virtual bool StartMotionWithMix(const char* name, bool loop, float mixSeconds)
+	{
+		StartMotion(name, loop);
+		return true;
+	}
+	virtual bool QueueMotion(const char*, bool, float) { return false; }
+	virtual bool SetCurrentMotionTimeScale(float) noexcept { return false; }
 	virtual float MotionDuration(const char* name) const = 0;
 	virtual void SetMotionBlendSeconds(float seconds) = 0;
 	virtual void SetSecondaryMotions(const std::vector<std::string>& names, bool loop) = 0;
+	virtual bool StartMotionOnTrack(int, const char*, bool, float) { return false; }
+	virtual bool ClearMotionTrack(int, float) { return false; }
+	virtual bool HoldMotionTrack(int, float) { return false; }
 	virtual void ApplyLook(const char* name) = 0;
+	virtual void ComposeLooks(const std::vector<std::string>& names) = 0;
+	virtual bool SetSlotOverride(const char*, float, SlotAttachmentMode) { return false; }
+	virtual void ClearSlotOverrides() {}
+	virtual void DrainAnimationEvents(std::vector<AnimationEvent>& events) { events.clear(); }
 	virtual std::string LastError() const = 0;
+	virtual bool ReadBoneTransform(const char*, std::array<float, 6>&) const { return false; }
 };
 
 std::unique_ptr<IRuntime> CreateCpp21Runtime();
+std::unique_ptr<IRuntime> CreateCpp31Runtime();
 std::unique_ptr<IRuntime> CreateCpp34Runtime();
 std::unique_ptr<IRuntime> CreateCpp35Runtime();
 std::unique_ptr<IRuntime> CreateCpp36Runtime();

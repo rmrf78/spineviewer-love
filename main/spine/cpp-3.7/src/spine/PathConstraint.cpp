@@ -1,32 +1,3 @@
-/******************************************************************************
- * Spine Runtimes License Agreement
- * Last updated May 1, 2019. Replaces all prior versions.
- *
- * Copyright (c) 2013-2019, Esoteric Software LLC
- *
- * Integration of the Spine Runtimes into software or otherwise creating
- * derivative works of the Spine Runtimes is permitted under the terms and
- * conditions of Section 2 of the Spine Editor License Agreement:
- * http://esotericsoftware.com/spine-editor-license
- *
- * Otherwise, it is permitted to integrate the Spine Runtimes into software
- * or otherwise create derivative works of the Spine Runtimes (collectively,
- * "Products"), provided that each user of the Products must obtain their own
- * Spine Editor license and redistribution of the Products in any form must
- * include this license and copyright notice.
- *
- * THIS SOFTWARE IS PROVIDED BY ESOTERIC SOFTWARE LLC "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN
- * NO EVENT SHALL ESOTERIC SOFTWARE LLC BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES, BUSINESS
- * INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
-
 #include <spine/PathConstraint.h>
 #include <spine/Skeleton.h>
 #include <spine/extension.h>
@@ -78,9 +49,9 @@ void spPathConstraint_apply (spPathConstraint* self) {
 	float* spaces, *lengths, *positions;
 	float spacing;
 	float boneX, boneY, offsetRotation;
-	int/*bool*/tip;
+	int tip;
 	float rotateMix = self->rotateMix, translateMix = self->translateMix;
-	int/*bool*/ translate = translateMix > 0, rotate = rotateMix > 0;
+	int  translate = translateMix > 0, rotate = rotateMix > 0;
 	int lengthSpacing;
 	spPathAttachment* attachment = (spPathAttachment*)self->target->attachment;
 	spPathConstraintData* data = self->data;
@@ -212,14 +183,13 @@ static void _addAfterPosition (float p, float* temp, int i, float* out, int o) {
 	out[o + 2] = r;
 }
 
-/* Need to pass 0 as an argument, so VC++ doesn't error with C2124 */
 static int _isNan(float value, float zero) {
 	float _nan =  (float)0.0 / zero;
 	return 0 == memcmp((void*)&value, (void*)&_nan, sizeof(value));
 }
 
 static void _addCurvePosition (float p, float x1, float y1, float cx1, float cy1, float cx2, float cy2, float x2, float y2,
-		float* out, int o, int/*bool*/tangents) {
+		float* out, int o, int tangents) {
 	float tt, ttt, u, uu, uuu;
 	float ut, ut3, uut3, utt3;
 	float x, y;
@@ -243,8 +213,8 @@ static void _addCurvePosition (float p, float x1, float y1, float cx1, float cy1
 	}
 }
 
-float* spPathConstraint_computeWorldPositions(spPathConstraint* self, spPathAttachment* path, int spacesCount, int/*bool*/ tangents, int/*bool*/percentPosition, int/**/percentSpacing) {
-	int i, o, w, curve, segment, /*bool*/closed, verticesLength, curveCount, prevCurve;
+float* spPathConstraint_computeWorldPositions(spPathConstraint* self, spPathAttachment* path, int spacesCount, int  tangents, int percentPosition, int percentSpacing) {
+	int i, o, w, curve, segment,  closed, verticesLength, curveCount, prevCurve;
 	float* out, *curves, *segments;
 	float tmpx, tmpy, dddfx, dddfy, ddfx, ddfy, dfx, dfy, pathLength, curveLength, p;
 	float x1, y1, cx1, cy1, cx2, cy2, x2, y2;
@@ -300,7 +270,6 @@ float* spPathConstraint_computeWorldPositions(spPathConstraint* self, spPathAtta
 				continue;
 			}
 
-			/* Determine curve containing position. */
 			for (;; curve++) {
 				float length = lengths[curve];
 				if (p > length) continue;
@@ -326,7 +295,6 @@ float* spPathConstraint_computeWorldPositions(spPathConstraint* self, spPathAtta
 		return out;
 	}
 
-	/* World vertices. */
 	if (closed) {
 		verticesLength += 2;
 		if (self->worldCount != verticesLength) {
@@ -351,7 +319,6 @@ float* spPathConstraint_computeWorldPositions(spPathConstraint* self, spPathAtta
 		spVertexAttachment_computeWorldVertices(SUPER(path), target, 2, verticesLength, world, 0, 2);
 	}
 
-	/* Curve lengths. */
 	if (self->curvesCount != curveCount) {
 		if (self->curves) FREE(self->curves);
 		self->curves = MALLOC(float, curveCount);
@@ -419,7 +386,6 @@ float* spPathConstraint_computeWorldPositions(spPathConstraint* self, spPathAtta
 			continue;
 		}
 
-		/* Determine curve containing position. */
 		for (;; curve++) {
 			float length = curves[curve];
 			if (p > length) continue;
@@ -432,7 +398,6 @@ float* spPathConstraint_computeWorldPositions(spPathConstraint* self, spPathAtta
 			break;
 		}
 
-		/* Curve segment lengths. */
 		if (curve != prevCurve) {
 			int ii;
 			prevCurve = curve;
@@ -474,7 +439,6 @@ float* spPathConstraint_computeWorldPositions(spPathConstraint* self, spPathAtta
 			segment = 0;
 		}
 
-		/* Weight by segment length. */
 		p *= curveLength;
 		for (;; segment++) {
 			float length = segments[segment];

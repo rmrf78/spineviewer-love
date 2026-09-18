@@ -1,40 +1,14 @@
-/*
-Copyright (c) 2009, Dave Gamble
-Copyright (c) 2013, Esoteric Software
-
-Permission is hereby granted, dispose of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-*/
-
 #ifdef SPINE_UE4
 #include "SpinePluginPrivatePCH.h"
 #endif
 
-/* Json */
-/* JSON parser in CPP, from json.c in the spine-c runtime */
-
 #ifndef _DEFAULT_SOURCE
-/* Bring strings.h definitions into string.h, where appropriate */
+
 #define _DEFAULT_SOURCE
 #endif
 
 #ifndef _BSD_SOURCE
-/* Bring strings.h definitions into string.h, where appropriate */
+
 #define _BSD_SOURCE
 #endif
 
@@ -141,7 +115,7 @@ Json::~Json() {
 
 const char *Json::skip(const char *inValue) {
 	if (!inValue) {
-		/* must propagate NULL since it's often called in skip(f(...)) form */
+
 		return NULL;
 	}
 
@@ -153,11 +127,10 @@ const char *Json::skip(const char *inValue) {
 }
 
 const char *Json::parseValue(Json *item, const char *value) {
-	/* Referenced by constructor, parseArray(), and parseObject(). */
-	/* Always called with the result of skip(). */
-#ifdef SPINE_JSON_DEBUG /* Checked at entry to graph, constructor, and after every parse call. */
+
+#ifdef SPINE_JSON_DEBUG
 	if (!value) {
-		/* Fail on null. */
+
 		return NULL;
 	}
 #endif
@@ -173,7 +146,7 @@ const char *Json::parseValue(Json *item, const char *value) {
 	case 'f': {
 		if (!strncmp(value + 1, "alse", 4)) {
 			item->_type = JSON_FALSE;
-			/* calloc prevents us needing item->_type = JSON_FALSE or valueInt = 0 here */
+
 			return value + 5;
 		}
 		break;
@@ -192,16 +165,16 @@ const char *Json::parseValue(Json *item, const char *value) {
 		return parseArray(item, value);
 	case '{':
 		return parseObject(item, value);
-	case '-': /* fallthrough */
-	case '0': /* fallthrough */
-	case '1': /* fallthrough */
-	case '2': /* fallthrough */
-	case '3': /* fallthrough */
-	case '4': /* fallthrough */
-	case '5': /* fallthrough */
-	case '6': /* fallthrough */
-	case '7': /* fallthrough */
-	case '8': /* fallthrough */
+	case '-':
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
 	case '9':
 		return parseNumber(item, value);
 	default:
@@ -209,7 +182,7 @@ const char *Json::parseValue(Json *item, const char *value) {
 	}
 
 	_error = value;
-	return NULL; /* failure. */
+	return NULL;
 }
 
 static const unsigned char firstByteMark[7] = {0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC};
@@ -221,18 +194,18 @@ const char *Json::parseString(Json *item, const char *str) {
 	int len = 0;
 	unsigned uc, uc2;
 	if (*str != '\"') {
-		/* TODO: don't need this check when called from parseValue, but do need from parseObject */
+
 		_error = str;
 		return 0;
-	} /* not a string! */
+	}
 
 	while (*ptr != '\"' && *ptr && ++len) {
 		if (*ptr++ == '\\') {
-			ptr++; /* Skip escaped quotes. */
+			ptr++;
 		}
 	}
 
-	out = SpineExtension::alloc<char>(len + 1, __FILE__, __LINE__); /* The length needed for the string, roughly. */
+	out = SpineExtension::alloc<char>(len + 1, __FILE__, __LINE__);
 	if (!out) {
 		return 0;
 	}
@@ -261,23 +234,22 @@ const char *Json::parseString(Json *item, const char *str) {
 					*ptr2++ = '\t';
 					break;
 				case 'u': {
-					/* transcode utf16 to utf8. */
+
 					sscanf(ptr + 1, "%4x", &uc);
-					ptr += 4; /* get the unicode char. */
+					ptr += 4;
 
 					if ((uc >= 0xDC00 && uc <= 0xDFFF) || uc == 0) {
-						break; /* check for invalid.	*/
+						break;
 					}
 
-					/* TODO provide an option to ignore surrogates, use unicode replacement character? */
-					if (uc >= 0xD800 && uc <= 0xDBFF) /* UTF16 surrogate pairs.	*/ {
+					if (uc >= 0xD800 && uc <= 0xDBFF)   {
 						if (ptr[1] != '\\' || ptr[2] != 'u') {
-							break; /* missing second-half of surrogate.	*/
+							break;
 						}
 						sscanf(ptr + 3, "%4x", &uc2);
 						ptr += 6;
 						if (uc2 < 0xDC00 || uc2 > 0xDFFF) {
-							break; /* invalid second-half of surrogate.	*/
+							break;
 						}
 						uc = 0x10000 + (((uc & 0x3FF) << 10) | (uc2 & 0x3FF));
 					}
@@ -296,15 +268,15 @@ const char *Json::parseString(Json *item, const char *str) {
 						case 4:
 							*--ptr2 = ((uc | 0x80) & 0xBF);
 							uc >>= 6;
-							/* fallthrough */
+
 						case 3:
 							*--ptr2 = ((uc | 0x80) & 0xBF);
 							uc >>= 6;
-							/* fallthrough */
+
 						case 2:
 							*--ptr2 = ((uc | 0x80) & 0xBF);
 							uc >>= 6;
-							/* fallthrough */
+
 						case 1:
 							*--ptr2 = (uc | firstByteMark[len]);
 					}
@@ -322,7 +294,7 @@ const char *Json::parseString(Json *item, const char *str) {
 	*ptr2 = 0;
 
 	if (*ptr == '\"') {
-		ptr++; /* TODO error handling if not \" or \0 ? */
+		ptr++;
 	}
 
 	item->_valueString = out;
@@ -390,13 +362,13 @@ const char *Json::parseNumber(Json *item, const char *num) {
 	}
 
 	if (ptr != num) {
-		/* Parse success, number found. */
+
 		item->_valueFloat = (float)result;
 		item->_valueInt = (int)result;
 		item->_type = JSON_NUMBER;
 		return ptr;
 	} else {
-		/* Parse failure, _error is set. */
+
 		_error = num;
 		return NULL;
 	}
@@ -405,25 +377,25 @@ const char *Json::parseNumber(Json *item, const char *num) {
 const char *Json::parseArray(Json *item, const char *value) {
 	Json *child;
 
-#ifdef SPINE_JSON_DEBUG /* unnecessary, only callsite (parse_value) verifies this */
+#ifdef SPINE_JSON_DEBUG
 	if (*value != '[') {
 		ep = value;
 		return 0;
-	} /* not an array! */
+	}
 #endif
 
 	item->_type = JSON_ARRAY;
 	value = skip(value + 1);
 	if (*value == ']') {
-		return value + 1; /* empty array. */
+		return value + 1;
 	}
 
 	item->_child = child = new(__FILE__, __LINE__) Json(NULL);
 	if (!item->_child) {
-		return NULL; /* memory fail */
+		return NULL;
 	}
 
-	value = skip(parseValue(child, skip(value))); /* skip any spacing, get the value. */
+	value = skip(parseValue(child, skip(value)));
 
 	if (!value) {
 		return NULL;
@@ -434,7 +406,7 @@ const char *Json::parseArray(Json *item, const char *value) {
 	while (*value == ',') {
 		Json *new_item = new(__FILE__, __LINE__) Json(NULL);
 		if (!new_item) {
-			return NULL; /* memory fail */
+			return NULL;
 		}
 		child->_next = new_item;
 #if SPINE_JSON_HAVE_PREV
@@ -443,35 +415,34 @@ const char *Json::parseArray(Json *item, const char *value) {
 		child = new_item;
 		value = skip(parseValue(child, skip(value + 1)));
 		if (!value) {
-			return NULL; /* parse fail */
+			return NULL;
 		}
 		item->_size++;
 	}
 
 	if (*value == ']') {
-		return value + 1; /* end of array */
+		return value + 1;
 	}
 
 	_error = value;
 
-	return NULL; /* malformed. */
+	return NULL;
 }
 
-/* Build an object from the text. */
 const char *Json::parseObject(Json *item, const char *value) {
 	Json *child;
 
-#ifdef SPINE_JSON_DEBUG /* unnecessary, only callsite (parse_value) verifies this */
+#ifdef SPINE_JSON_DEBUG
 	if (*value != '{') {
 		ep = value;
 		return 0;
-	} /* not an object! */
+	}
 #endif
 
 	item->_type = JSON_OBJECT;
 	value = skip(value + 1);
 	if (*value == '}') {
-		return value + 1; /* empty array. */
+		return value + 1;
 	}
 
 	item->_child = child = new(__FILE__, __LINE__) Json(NULL);
@@ -487,9 +458,9 @@ const char *Json::parseObject(Json *item, const char *value) {
 	if (*value != ':') {
 		_error = value;
 		return NULL;
-	} /* fail! */
+	}
 
-	value = skip(parseValue(child, skip(value + 1))); /* skip any spacing, get the value. */
+	value = skip(parseValue(child, skip(value + 1)));
 	if (!value) {
 		return NULL;
 	}
@@ -499,7 +470,7 @@ const char *Json::parseObject(Json *item, const char *value) {
 	while (*value == ',') {
 		Json *new_item = new(__FILE__, __LINE__) Json(NULL);
 		if (!new_item) {
-			return NULL; /* memory fail */
+			return NULL;
 		}
 		child->_next = new_item;
 #if SPINE_JSON_HAVE_PREV
@@ -515,9 +486,9 @@ const char *Json::parseObject(Json *item, const char *value) {
 		if (*value != ':') {
 			_error = value;
 			return NULL;
-		} /* fail! */
+		}
 
-		value = skip(parseValue(child, skip(value + 1))); /* skip any spacing, get the value. */
+		value = skip(parseValue(child, skip(value + 1)));
 		if (!value) {
 			return NULL;
 		}
@@ -525,18 +496,16 @@ const char *Json::parseObject(Json *item, const char *value) {
 	}
 
 	if (*value == '}') {
-		return value + 1; /* end of array */
+		return value + 1;
 	}
 
 	_error = value;
 
-	return NULL; /* malformed. */
+	return NULL;
 }
 
 int Json::json_strcasecmp(const char *s1, const char *s2) {
-	/* TODO we may be able to elide these NULL checks if we can prove
-	 * the graph and input (only callsite is Json_getItem) should not have NULLs
-	 */
+
 	if (s1 && s2) {
 #if defined(_WIN32)
 		return _stricmp(s1, s2);
@@ -545,11 +514,11 @@ int Json::json_strcasecmp(const char *s1, const char *s2) {
 #endif
 	} else {
 		if (s1 < s2) {
-			return -1; /* s1 is null, s2 is not */
+			return -1;
 		} else if (s1 == s2) {
-			return 0; /* both are null */
+			return 0;
 		} else {
-			return 1; /* s2 is nul	s1 is not */
+			return 1;
 		}
 	}
 }

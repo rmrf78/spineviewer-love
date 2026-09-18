@@ -34,13 +34,29 @@ bool D3D11Renderer::CreateShaders(const wchar_t* shaderPath)
 
 	Microsoft::WRL::ComPtr<ID3DBlob> vertexBlob;
 	Microsoft::WRL::ComPtr<ID3DBlob> pixelBlob;
+	Microsoft::WRL::ComPtr<ID3DBlob> maskedPixelBlob;
+	Microsoft::WRL::ComPtr<ID3DBlob> invertedMaskedPixelBlob;
+	Microsoft::WRL::ComPtr<ID3DBlob> colorKeyResolvePixelBlob;
 	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
 	HRESULT hr = D3DCompileFromFile(shaderPath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 		"VSMain", "vs_4_0", flags, 0, vertexBlob.GetAddressOf(), errorBlob.GetAddressOf());
 	if (FAILED(hr))
 		return false;
 	hr = D3DCompileFromFile(shaderPath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		"PSMaskedInverted", "ps_4_0", flags, 0, invertedMaskedPixelBlob.GetAddressOf(), errorBlob.ReleaseAndGetAddressOf());
+	if (FAILED(hr))
+		return false;
+	hr = D3DCompileFromFile(shaderPath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		"PSMasked", "ps_4_0", flags, 0, maskedPixelBlob.GetAddressOf(), errorBlob.ReleaseAndGetAddressOf());
+	if (FAILED(hr))
+		return false;
+	hr = D3DCompileFromFile(shaderPath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 		"PSMain", "ps_4_0", flags, 0, pixelBlob.GetAddressOf(), errorBlob.ReleaseAndGetAddressOf());
+	if (FAILED(hr))
+		return false;
+	hr = D3DCompileFromFile(shaderPath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		"PSColorKeyResolve", "ps_4_0", flags, 0,
+		colorKeyResolvePixelBlob.GetAddressOf(), errorBlob.ReleaseAndGetAddressOf());
 	if (FAILED(hr))
 		return false;
 
@@ -48,6 +64,15 @@ bool D3D11Renderer::CreateShaders(const wchar_t* shaderPath)
 	if (FAILED(hr))
 		return false;
 	hr = m_device->CreatePixelShader(pixelBlob->GetBufferPointer(), pixelBlob->GetBufferSize(), nullptr, m_pixelShader.GetAddressOf());
+	if (FAILED(hr))
+		return false;
+	hr = m_device->CreatePixelShader(maskedPixelBlob->GetBufferPointer(), maskedPixelBlob->GetBufferSize(), nullptr, m_maskedPixelShader.GetAddressOf());
+	if (FAILED(hr))
+		return false;
+	hr = m_device->CreatePixelShader(invertedMaskedPixelBlob->GetBufferPointer(), invertedMaskedPixelBlob->GetBufferSize(), nullptr, m_invertedMaskedPixelShader.GetAddressOf());
+	if (FAILED(hr))
+		return false;
+	hr = m_device->CreatePixelShader(colorKeyResolvePixelBlob->GetBufferPointer(), colorKeyResolvePixelBlob->GetBufferSize(), nullptr, m_colorKeyResolvePixelShader.GetAddressOf());
 	if (FAILED(hr))
 		return false;
 
@@ -98,6 +123,8 @@ bool D3D11Renderer::CreateStates()
 	if (!CreateBlendState(D3D11_BLEND_DEST_COLOR, D3D11_BLEND_INV_SRC_ALPHA, D3D11_BLEND_ONE, D3D11_BLEND_INV_SRC_ALPHA, m_pmaMultiplyBlend.GetAddressOf()))
 		return false;
 	if (!CreateBlendState(D3D11_BLEND_ONE, D3D11_BLEND_INV_SRC_COLOR, D3D11_BLEND_ONE, D3D11_BLEND_INV_SRC_ALPHA, m_screenBlend.GetAddressOf()))
+		return false;
+	if (!CreateBlendState(D3D11_BLEND_ONE, D3D11_BLEND_ZERO, D3D11_BLEND_ONE, D3D11_BLEND_ZERO, m_opaqueBlend.GetAddressOf()))
 		return false;
 
 	D3D11_RASTERIZER_DESC rasterDesc{};
@@ -166,6 +193,7 @@ void D3D11Renderer::BeginFrame(int width, int height)
 	m_context->VSSetShader(m_vertexShader.Get(), nullptr, 0);
 	ID3D11Buffer* cb = m_viewBuffer.Get();
 	m_context->VSSetConstantBuffers(0, 1, &cb);
+	m_context->PSSetConstantBuffers(0, 1, &cb);
 	m_context->PSSetShader(m_pixelShader.Get(), nullptr, 0);
 	ID3D11SamplerState* sampler = m_sampler.Get();
 	m_context->PSSetSamplers(0, 1, &sampler);
@@ -174,9 +202,8 @@ void D3D11Renderer::BeginFrame(int width, int height)
 
 void D3D11Renderer::EndFrame()
 {
-	ID3D11ShaderResourceView* nullSrv = nullptr;
-	m_context->PSSetShaderResources(0, 1, &nullSrv);
-	m_context->Flush();
+	ID3D11ShaderResourceView* nullSrvs[2] = { nullptr, nullptr };
+	m_context->PSSetShaderResources(0, 2, nullSrvs);
 }
 
 void D3D11Renderer::DrawSprite(SlTextureId texture, const SlRect& dst, const SlRect& uv, const SlColor& tint)
@@ -198,24 +225,31 @@ void D3D11Renderer::DrawSprite(SlTextureId texture, const SlRect& dst, const SlR
 
 void D3D11Renderer::DrawTriangles(SlTextureId texture, const SlVertex2D* vertices, int vertexCount, const unsigned short* indices, int indexCount, SlBlendMode blendMode, bool premultipliedAlpha)
 {
+	DrawTrianglesInternal(texture, vertices, vertexCount, indices, indexCount, blendMode, premultipliedAlpha, 0, false);
+}
+
+void D3D11Renderer::DrawTrianglesInternal(SlTextureId texture, const SlVertex2D* vertices, int vertexCount,
+	const unsigned short* indices, int indexCount, SlBlendMode blendMode, bool premultipliedAlpha,
+	SlTextureId maskTexture, bool invertedMask, bool colorKeyResolve, bool vertexColorsPremultiplied)
+{
 	if (vertices == nullptr || indices == nullptr || vertexCount <= 0 || indexCount <= 0)
 		return;
 
 	if (!EnsureVertexBuffer(static_cast<size_t>(vertexCount)) || !EnsureIndexBuffer(static_cast<size_t>(indexCount)))
 		return;
 
-	std::vector<SlVertex2D> premultipliedVertices;
+	m_premultiplyScratch.clear();
 	const SlVertex2D* uploadVertices = vertices;
-	if (premultipliedAlpha)
+	if (premultipliedAlpha && !vertexColorsPremultiplied)
 	{
-		premultipliedVertices.assign(vertices, vertices + vertexCount);
-		for (SlVertex2D& vertex : premultipliedVertices)
+		m_premultiplyScratch.assign(vertices, vertices + vertexCount);
+		for (SlVertex2D& vertex : m_premultiplyScratch)
 		{
 			vertex.color.r *= vertex.color.a;
 			vertex.color.g *= vertex.color.a;
 			vertex.color.b *= vertex.color.a;
 		}
-		uploadVertices = premultipliedVertices.data();
+		uploadVertices = m_premultiplyScratch.data();
 	}
 
 	D3D11_MAPPED_SUBRESOURCE mapped{};
@@ -241,30 +275,86 @@ void D3D11Renderer::DrawTriangles(SlTextureId texture, const SlVertex2D* vertice
 	if (textureIt == m_textures.end())
 		return;
 
-	ApplyBlendMode(blendMode, premultipliedAlpha);
-	ID3D11ShaderResourceView* srv = textureIt->second.texture.srv.Get();
-	m_context->PSSetShaderResources(0, 1, &srv);
+	if (colorKeyResolve)
+	{
+		const float factor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+		m_context->OMSetBlendState(m_opaqueBlend.Get(), factor, 0xffffffff);
+	}
+	else
+	{
+		ApplyBlendMode(blendMode, premultipliedAlpha);
+	}
+	ID3D11ShaderResourceView* srvs[2] = { textureIt->second.texture.srv.Get(), nullptr };
+	if (maskTexture != 0)
+	{
+		auto maskIt = m_textures.find(maskTexture);
+		if (maskIt == m_textures.end())
+			return;
+		srvs[1] = maskIt->second.texture.srv.Get();
+	}
+	ID3D11PixelShader* pixelShader = colorKeyResolve
+		? m_colorKeyResolvePixelShader.Get()
+		: m_pixelShader.Get();
+	if (!colorKeyResolve && maskTexture != 0)
+		pixelShader = invertedMask ? m_invertedMaskedPixelShader.Get() : m_maskedPixelShader.Get();
+	m_context->PSSetShader(pixelShader, nullptr, 0);
+	m_context->PSSetShaderResources(0, 2, srvs);
 	m_context->DrawIndexed(static_cast<UINT>(indexCount), 0, 0);
+	ID3D11ShaderResourceView* nullSrvs[2] = { nullptr, nullptr };
+	m_context->PSSetShaderResources(0, 2, nullSrvs);
 }
 
 void D3D11Renderer::Submit(const SlDrawList& drawList, const std::unordered_map<std::uint64_t, SlTextureId>& textureMap)
 {
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> finalTarget;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> finalDepth;
+	m_context->OMGetRenderTargets(1, finalTarget.GetAddressOf(), finalDepth.GetAddressOf());
+
+	UINT viewportCount = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE;
+	D3D11_VIEWPORT finalViewports[D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE] = {};
+	m_context->RSGetViewports(&viewportCount, finalViewports);
+
 	for (const auto& command : drawList.commands)
 	{
 		auto textureIt = textureMap.find(command.textureId);
 		if (textureIt == textureMap.end())
 			continue;
 		const SlTextureId texture = textureIt->second;
-		DrawTriangles(texture, command.vertices.data(), static_cast<int>(command.vertices.size()),
+		bool maskReady = false;
+		if (!command.masks.empty() && EnsureMaskRenderTarget(drawList.width, drawList.height) &&
+			BeginRenderTarget(m_maskRenderTarget, SlVec4(0.0f, 0.0f, 0.0f, 0.0f)))
+		{
+			for (const SlMaskDrawCommand& mask : command.masks)
+			{
+				auto maskTextureIt = textureMap.find(mask.textureId);
+				if (maskTextureIt == textureMap.end())
+					continue;
+				DrawTrianglesInternal(maskTextureIt->second, mask.vertices.data(), static_cast<int>(mask.vertices.size()),
+					mask.indices.data(), static_cast<int>(mask.indices.size()), SlBlendMode::Normal,
+					mask.premultipliedAlpha, 0, false, false, true);
+				maskReady = true;
+			}
+
+			ID3D11ShaderResourceView* nullSrvs[2] = { nullptr, nullptr };
+			m_context->PSSetShaderResources(0, 2, nullSrvs);
+			ID3D11RenderTargetView* target = finalTarget.Get();
+			m_context->OMSetRenderTargets(1, &target, finalDepth.Get());
+			if (viewportCount > 0)
+				m_context->RSSetViewports(viewportCount, finalViewports);
+			BeginFrame(drawList.width, drawList.height);
+		}
+
+		DrawTrianglesInternal(texture, command.vertices.data(), static_cast<int>(command.vertices.size()),
 			command.indices.data(), static_cast<int>(command.indices.size()),
-			command.blendMode, command.premultipliedAlpha);
+			command.blendMode, command.premultipliedAlpha, maskReady ? m_maskRenderTarget : 0,
+			command.invertedMask, false, true);
 	}
 }
 
-SlTextureId D3D11Renderer::LoadTexture(const wchar_t* path, bool premultiplyAlpha)
+SlTextureId D3D11Renderer::LoadTexture(const wchar_t* path, bool premultiplyAlpha, bool generateMips)
 {
 	TextureSlot slot;
-	if (!LoadTextureFromFile(m_device, path, slot.texture, premultiplyAlpha))
+	if (!LoadTextureFromFile(m_device, path, slot.texture, premultiplyAlpha, nullptr, generateMips))
 		return 0;
 	const SlTextureId id = ++m_nextTextureId;
 	m_textures[id] = slot;
@@ -323,16 +413,27 @@ bool D3D11Renderer::ReadTexturePixels(SlTextureId texture, std::vector<unsigned 
 	stagingDesc.Usage = D3D11_USAGE_STAGING;
 	stagingDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> staging;
-	if (FAILED(m_device->CreateTexture2D(&stagingDesc, nullptr, staging.GetAddressOf())))
-		return false;
+	if (m_readbackStaging &&
+		(m_readbackStagingDesc.Width != stagingDesc.Width ||
+			m_readbackStagingDesc.Height != stagingDesc.Height ||
+			m_readbackStagingDesc.Format != stagingDesc.Format))
+	{
+		m_readbackStaging.Reset();
+	}
+	if (!m_readbackStaging)
+	{
+		if (FAILED(m_device->CreateTexture2D(&stagingDesc, nullptr, m_readbackStaging.GetAddressOf())))
+			return false;
+		m_readbackStagingDesc = stagingDesc;
+	}
+	ID3D11Texture2D* staging = m_readbackStaging.Get();
 
 	ID3D11ShaderResourceView* nullSrv = nullptr;
 	m_context->PSSetShaderResources(0, 1, &nullSrv);
-	m_context->CopyResource(staging.Get(), it->second.texture.texture.Get());
+	m_context->CopyResource(staging, it->second.texture.texture.Get());
 
 	D3D11_MAPPED_SUBRESOURCE mapped{};
-	if (FAILED(m_context->Map(staging.Get(), 0, D3D11_MAP_READ, 0, &mapped)))
+	if (FAILED(m_context->Map(staging, 0, D3D11_MAP_READ, 0, &mapped)))
 		return false;
 
 	outWidth = static_cast<int>(desc.Width);
@@ -345,7 +446,7 @@ bool D3D11Renderer::ReadTexturePixels(SlTextureId texture, std::vector<unsigned 
 		unsigned char* dst = outRgba.data() + static_cast<size_t>(outStride) * y;
 		std::memcpy(dst, src, static_cast<size_t>(outStride));
 	}
-	m_context->Unmap(staging.Get(), 0);
+	m_context->Unmap(staging, 0);
 	return true;
 }
 
@@ -449,8 +550,8 @@ bool D3D11Renderer::BeginRenderTarget(SlTextureId renderTarget, const SlVec4& cl
 	if (it == m_renderTargets.end())
 		return false;
 
-	ID3D11ShaderResourceView* nullSrv = nullptr;
-	m_context->PSSetShaderResources(0, 1, &nullSrv);
+	ID3D11ShaderResourceView* nullSrvs[2] = { nullptr, nullptr };
+	m_context->PSSetShaderResources(0, 2, nullSrvs);
 	ID3D11RenderTargetView* target = it->second.rtv.Get();
 	m_context->OMSetRenderTargets(1, &target, nullptr);
 	const FLOAT color[] = { clearColor.x, clearColor.y, clearColor.z, clearColor.w };
@@ -466,6 +567,122 @@ bool D3D11Renderer::BeginRenderTarget(SlTextureId renderTarget, const SlVec4& cl
 	m_context->RSSetViewports(1, &viewport);
 	BeginFrame(it->second.width, it->second.height);
 	return true;
+}
+
+SlTextureId D3D11Renderer::CreateDynamicTexture(int width, int height)
+{
+	if (m_device == nullptr || width <= 0 || height <= 0)
+		return 0;
+
+	D3D11_TEXTURE2D_DESC desc{};
+	desc.Width = static_cast<UINT>(width);
+	desc.Height = static_cast<UINT>(height);
+	desc.MipLevels = 1;
+	desc.ArraySize = 1;
+	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.SampleDesc.Count = 1;
+	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
+	if (FAILED(m_device->CreateTexture2D(&desc, nullptr, texture.GetAddressOf())))
+		return 0;
+
+	TextureSlot slot;
+	if (FAILED(m_device->CreateShaderResourceView(texture.Get(), nullptr, slot.texture.srv.GetAddressOf())))
+		return 0;
+	slot.texture.texture = texture;
+	slot.texture.width = width;
+	slot.texture.height = height;
+
+	const SlTextureId id = ++m_nextTextureId;
+	m_textures[id] = slot;
+	return id;
+}
+
+bool D3D11Renderer::UpdateDynamicTexture(SlTextureId texture, const unsigned char* rgba, int width, int height)
+{
+	if (rgba == nullptr || width <= 0 || height <= 0 || m_context == nullptr)
+		return false;
+	auto it = m_textures.find(texture);
+	if (it == m_textures.end() || !it->second.texture.texture)
+		return false;
+	if (it->second.texture.width != width || it->second.texture.height != height)
+		return false;
+
+	D3D11_MAPPED_SUBRESOURCE mapped{};
+	if (FAILED(m_context->Map(it->second.texture.texture.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
+		return false;
+	const unsigned char* src = rgba;
+	unsigned char* dst = static_cast<unsigned char*>(mapped.pData);
+	const size_t rowBytes = static_cast<size_t>(width) * 4;
+	for (int y = 0; y < height; ++y)
+	{
+		std::memcpy(dst + static_cast<size_t>(y) * mapped.RowPitch, src + static_cast<size_t>(y) * rowBytes, rowBytes);
+	}
+	m_context->Unmap(it->second.texture.texture.Get(), 0);
+	return true;
+}
+
+bool D3D11Renderer::EnsureMaskRenderTarget(int width, int height)
+{
+	if (width <= 0 || height <= 0)
+		return false;
+	if (m_maskRenderTarget != 0 && m_maskRenderTargetWidth == width && m_maskRenderTargetHeight == height)
+		return true;
+
+	if (m_maskRenderTarget != 0)
+		ReleaseTexture(m_maskRenderTarget);
+	m_maskRenderTarget = CreateRenderTarget(width, height);
+	if (m_maskRenderTarget == 0)
+	{
+		m_maskRenderTargetWidth = 0;
+		m_maskRenderTargetHeight = 0;
+		return false;
+	}
+	m_maskRenderTargetWidth = width;
+	m_maskRenderTargetHeight = height;
+	return true;
+}
+
+SlTextureId D3D11Renderer::CreateVideoTexture(int width, int height)
+{
+	if (m_device == nullptr || width <= 0 || height <= 0)
+		return 0;
+
+	D3D11_TEXTURE2D_DESC desc{};
+	desc.Width = static_cast<UINT>(width);
+	desc.Height = static_cast<UINT>(height);
+	desc.MipLevels = 1;
+	desc.ArraySize = 1;
+	desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+	desc.SampleDesc.Count = 1;
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
+	if (FAILED(m_device->CreateTexture2D(&desc, nullptr, texture.GetAddressOf())))
+		return 0;
+
+	TextureSlot slot;
+	if (FAILED(m_device->CreateShaderResourceView(texture.Get(), nullptr, slot.texture.srv.GetAddressOf())))
+		return 0;
+	slot.texture.texture = texture;
+	slot.texture.width = width;
+	slot.texture.height = height;
+
+	const SlTextureId id = ++m_nextTextureId;
+	m_textures[id] = slot;
+	return id;
+}
+
+ID3D11Texture2D* D3D11Renderer::GetNativeTexture(SlTextureId texture) const noexcept
+{
+	auto it = m_textures.find(texture);
+	if (it == m_textures.end())
+		return nullptr;
+	return it->second.texture.texture.Get();
 }
 
 bool D3D11Renderer::EnsureVertexBuffer(size_t vertexCount)

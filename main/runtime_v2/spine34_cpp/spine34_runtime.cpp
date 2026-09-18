@@ -1503,6 +1503,7 @@ public:
         m_animations.clear();
         m_currentAnimation.clear();
         m_currentSkin.clear();
+		m_currentSkins.clear();
         m_additionalTracks.clear();
         m_currentTime = 0.0f;
         m_currentLoop = true;
@@ -1733,12 +1734,27 @@ public:
         if (name == nullptr || name[0] == '\0')
         {
             m_currentSkin = m_skinNames.front();
+			m_currentSkins.assign(1, m_currentSkin);
             return;
         }
 
         const auto it = std::find(m_skinNames.begin(), m_skinNames.end(), std::string(name));
         if (it != m_skinNames.end())
+        {
             m_currentSkin = *it;
+			m_currentSkins.assign(1, m_currentSkin);
+		}
+    }
+    void ComposeLooks(const std::vector<std::string>& names) override
+    {
+		m_currentSkins.clear();
+		for (const std::string& name : names)
+			if (std::find(m_skinNames.begin(), m_skinNames.end(), name) != m_skinNames.end())
+				m_currentSkins.push_back(name);
+		if (m_currentSkins.empty() && !m_skinNames.empty())
+			m_currentSkins.push_back(m_skinNames.front());
+		if (!m_currentSkins.empty())
+			m_currentSkin = m_currentSkins.back();
     }
     std::string LastError() const override { return m_lastError; }
 
@@ -3742,19 +3758,24 @@ private:
 
     const RegionAttachment* FindAttachment(const std::string& slotName, const std::string& attachmentName) const
     {
-        const std::string skin = m_currentSkin.empty() ? "default" : m_currentSkin;
-        auto it = m_attachments.find(SkinAttachmentKey(skin, slotName, attachmentName));
-        if (it != m_attachments.end())
-            return &it->second;
+		for (auto skin = m_currentSkins.rbegin(); skin != m_currentSkins.rend(); ++skin)
+		{
+			auto it = m_attachments.find(SkinAttachmentKey(*skin, slotName, attachmentName));
+			if (it != m_attachments.end())
+				return &it->second;
+		}
+		if (m_currentSkins.empty() && !m_currentSkin.empty())
+		{
+			auto it = m_attachments.find(SkinAttachmentKey(m_currentSkin, slotName, attachmentName));
+			if (it != m_attachments.end())
+				return &it->second;
+		}
 
-        if (skin != "default")
-        {
-            it = m_attachments.find(SkinAttachmentKey("default", slotName, attachmentName));
-            if (it != m_attachments.end())
-                return &it->second;
-        }
+		auto it = m_attachments.find(SkinAttachmentKey("default", slotName, attachmentName));
+		if (it != m_attachments.end())
+			return &it->second;
 
-        it = m_attachments.find(slotName + "\n" + attachmentName);
+		it = m_attachments.find(slotName + "\n" + attachmentName);
         return it == m_attachments.end() ? nullptr : &it->second;
     }
 
@@ -3792,6 +3813,7 @@ private:
     std::map<std::string, AnimationData> m_animations;
     std::string m_currentAnimation;
     std::string m_currentSkin;
+	std::vector<std::string> m_currentSkins;
     std::vector<TrackState> m_additionalTracks;
     float m_currentTime = 0.0f;
     bool m_currentLoop = true;
@@ -3807,4 +3829,3 @@ std::unique_ptr<IRuntime> CreateCpp34Runtime()
 }
 
 }
-

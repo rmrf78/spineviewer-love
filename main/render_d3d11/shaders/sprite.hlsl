@@ -32,9 +32,34 @@ PSInput VSMain(VSInput input)
 }
 
 Texture2D spriteTexture : register(t0);
+Texture2D maskTexture : register(t1);
 SamplerState spriteSampler : register(s0);
 
 float4 PSMain(PSInput input) : SV_TARGET
 {
 	return spriteTexture.Sample(spriteSampler, input.uv) * input.color;
+}
+
+float4 PSColorKeyResolve(PSInput input) : SV_TARGET
+{
+	const float4 sampleColor = spriteTexture.Sample(spriteSampler, input.uv);
+	if (sampleColor.a <= 0.08f)
+		return float4(1.0f / 255.0f, 0.0f, 1.0f / 255.0f, 1.0f);
+
+	const float3 straightColor = saturate(sampleColor.rgb / max(sampleColor.a, 1.0f / 255.0f));
+	return float4(straightColor, 1.0f);
+}
+
+float4 PSMasked(PSInput input) : SV_TARGET
+{
+	float2 maskUv = input.position.xy / viewportSize;
+	float maskAlpha = maskTexture.Sample(spriteSampler, maskUv).a;
+	return spriteTexture.Sample(spriteSampler, input.uv) * input.color * maskAlpha;
+}
+
+float4 PSMaskedInverted(PSInput input) : SV_TARGET
+{
+	float2 maskUv = input.position.xy / viewportSize;
+	float maskAlpha = 1.0f - maskTexture.Sample(spriteSampler, maskUv).a;
+	return spriteTexture.Sample(spriteSampler, input.uv) * input.color * maskAlpha;
 }

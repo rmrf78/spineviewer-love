@@ -7,9 +7,16 @@
 #include <fstream>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
+#if !defined(SL_SPINE_C_NO_CLIPPING)
 #include <spine/SkeletonClipping.h>
+#endif
+#if defined(SL_SPINE_C_HAS_WEIGHTED_MESH)
+#include <spine/WeightedMeshAttachment.h>
+#endif
+#include <spine/extension.h>
 #include <spine/spine.h>
 
 #ifndef SL_RUNTIME_FACTORY_NAME
@@ -30,6 +37,30 @@ struct RuntimeTexture
 {
 	sl_runtime_v2::TextureInfo info;
 };
+
+struct RuntimeSlotOverride
+{
+	float alpha = 1.0f;
+	sl_runtime_v2::SlotAttachmentMode attachmentMode = sl_runtime_v2::SlotAttachmentMode::Preserve;
+};
+
+#if defined(SL_SPINE_C_NO_BINARY)
+struct SlSkinEntry
+{
+	int slotIndex;
+	const char* name;
+	spAttachment* attachment;
+	SlSkinEntry* next;
+};
+struct SlSkinInternal
+{
+	spSkin super;
+	SlSkinEntry* entries;
+};
+#else
+using SlSkinEntry = _Entry;
+using SlSkinInternal = _spSkin;
+#endif
 
 std::vector<std::unique_ptr<RuntimeTexture>>* g_loadingTextures = nullptr;
 
@@ -231,7 +262,7 @@ public:
 	{
 		Clear();
 #if defined(SL_SPINE_C_HAS_BONE_Y_DOWN)
-		spBone_setYDown(-1);
+		spBone_setYDown(0);
 #endif
 		const bool useMemory = !request.atlasData.empty() || !request.skeletonData.empty();
 		return useMemory ? LoadFromMemory(request) : LoadFromFiles(request);
@@ -239,8 +270,11 @@ public:
 
 	void Clear() noexcept override
 	{
+		DisposeCompositeSkin();
+#if !defined(SL_SPINE_C_NO_CLIPPING)
 		if (m_clipper != nullptr)
 			spSkeletonClipping_dispose(m_clipper);
+#endif
 		if (m_state != nullptr)
 			spAnimationState_dispose(m_state);
 		if (m_stateData != nullptr)
@@ -257,12 +291,15 @@ public:
 		m_skeleton = nullptr;
 		m_skeletonData = nullptr;
 		m_atlas = nullptr;
+#if !defined(SL_SPINE_C_NO_CLIPPING)
 		m_clipper = nullptr;
+#endif
 		m_textures.clear();
 		m_textureInfos.clear();
 		m_animationNames.clear();
 		m_skinNames.clear();
 		m_slotNames.clear();
+		m_slotOverrides.clear();
 		m_lastError.clear();
 	}
 
@@ -276,7 +313,11 @@ public:
 		if (m_skeleton == nullptr || m_state == nullptr)
 			return;
 		spAnimationState_update(m_state, deltaSeconds);
+#if defined(SL_SPINE_C_RESET_POSE_BEFORE_APPLY)
+		spSkeleton_setToSetupPose(m_skeleton);
+#endif
 		spAnimationState_apply(m_state, m_skeleton);
+		ApplySlotOverrides();
 		spSkeleton_update(m_skeleton, deltaSeconds);
 		spSkeleton_updateWorldTransform(m_skeleton);
 	}
@@ -289,8 +330,10 @@ public:
 		if (m_skeleton == nullptr)
 			return;
 
+#if !defined(SL_SPINE_C_NO_CLIPPING)
 		if (m_clipper != nullptr)
 			spSkeletonClipping_clipEnd2(m_clipper);
+#endif
 
 		const Color skeletonColor = SkeletonColor(m_skeleton);
 		for (int slotIndex = 0; slotIndex < m_skeleton->slotsCount; ++slotIndex)
@@ -305,12 +348,14 @@ public:
 				continue;
 			}
 
+			#if !defined(SL_SPINE_C_NO_CLIPPING)
 			if (slot->attachment->type == SP_ATTACHMENT_CLIPPING)
 			{
 				if (m_clipper != nullptr)
 					spSkeletonClipping_clipStart(m_clipper, slot, reinterpret_cast<spClippingAttachment*>(slot->attachment));
 				continue;
 			}
+			#endif
 
 			if (slot->attachment->type == SP_ATTACHMENT_REGION)
 			{
@@ -326,11 +371,19 @@ public:
 				BuildSkinnedMeshCommand(slot, skeletonColor, outFrame);
 			}
 #endif
+#if defined(SL_SPINE_C_HAS_WEIGHTED_MESH)
+			else if (slot->attachment->type == SP_ATTACHMENT_WEIGHTED_MESH)
+			{
+				BuildWeightedMeshCommand(slot, skeletonColor, outFrame);
+			}
+#endif
 			FinishClipAtSlot(slot);
 		}
 
+#if !defined(SL_SPINE_C_NO_CLIPPING)
 		if (m_clipper != nullptr)
 			spSkeletonClipping_clipEnd2(m_clipper);
+#endif
 	}
 
 	const std::vector<std::string>& MotionNames() const noexcept override { return m_animationNames; }
@@ -342,6 +395,29 @@ public:
 	{
 		if (m_state != nullptr && name != nullptr)
 			spAnimationState_setAnimationByName(m_state, 0, name, loop ? 1 : 0);
+	}
+	bool StartMotionWithMix(const char* name, bool loop, float mixSeconds) override
+	{
+		if (m_state == nullptr || m_skeletonData == nullptr || name == nullptr || name[0] == '\0' ||
+			spSkeletonData_findAnimation(m_skeletonData, name) == nullptr) return false;
+		spTrackEntry* entry = spAnimationState_setAnimationByName(m_state, 0, name, loop ? 1 : 0);
+		if (entry && mixSeconds >= 0.0f) entry->mixDuration = mixSeconds;
+		return entry != nullptr;
+	}
+	bool QueueMotion(const char* name, bool loop, float mixSeconds) override
+	{
+		if (m_state == nullptr || m_skeletonData == nullptr || name == nullptr || name[0] == '\0' ||
+			spSkeletonData_findAnimation(m_skeletonData, name) == nullptr) return false;
+		spTrackEntry* entry = spAnimationState_addAnimationByName(m_state, 0, name, loop ? 1 : 0, 0.0f);
+		if (entry && mixSeconds >= 0.0f) entry->mixDuration = mixSeconds;
+		return entry != nullptr;
+	}
+	bool SetCurrentMotionTimeScale(float timeScale) noexcept override
+	{
+		if (m_state == nullptr || m_state->tracksCount <= 0 || m_state->tracks == nullptr ||
+			m_state->tracks[0] == nullptr) return false;
+		m_state->tracks[0]->timeScale = (std::max)(0.0f, timeScale);
+		return true;
 	}
 
 	float MotionDuration(const char* name) const override
@@ -392,12 +468,62 @@ public:
 
 	void ApplyLook(const char* name) override
 	{
-		if (m_skeleton != nullptr && name != nullptr)
-		{
-			spSkeleton_setSkinByName(m_skeleton, name);
-			spSkeleton_setSlotsToSetupPose(m_skeleton);
-		}
+		if (m_skeleton == nullptr || m_skeletonData == nullptr || name == nullptr || name[0] == '\0')
+			return;
+		spSkin* skin = spSkeletonData_findSkin(m_skeletonData, name);
+		if (skin == nullptr)
+			return;
+		spSkeleton_setSkin(m_skeleton, skin);
+		spSkeleton_setSlotsToSetupPose(m_skeleton);
+		ReapplyCurrentPose();
+		DisposeCompositeSkin();
 	}
+
+	void ComposeLooks(const std::vector<std::string>& names) override
+	{
+		if (m_skeleton == nullptr || m_skeletonData == nullptr || names.empty())
+			return;
+
+		std::vector<spSkin*> skins;
+		for (const std::string& name : names)
+		{
+			spSkin* skin = spSkeletonData_findSkin(m_skeletonData, name.c_str());
+			if (skin != nullptr)
+				skins.push_back(skin);
+		}
+		if (skins.empty())
+			return;
+
+		spSkin* combined = spSkin_create("__spinelove_composite");
+		for (spSkin* skin : skins)
+		{
+			for (SlSkinEntry* entry = reinterpret_cast<SlSkinInternal*>(skin)->entries; entry != nullptr; entry = entry->next)
+				spSkin_addAttachment(combined, entry->slotIndex, entry->name, entry->attachment);
+		}
+
+		spSkeleton_setSkin(m_skeleton, combined);
+		spSkeleton_setSlotsToSetupPose(m_skeleton);
+		ReapplyCurrentPose();
+		DisposeCompositeSkin();
+		m_compositeSkin = combined;
+	}
+
+	bool SetSlotOverride(const char* slotName, float alpha,
+		SlotAttachmentMode attachmentMode) override
+	{
+		if (m_skeleton == nullptr || slotName == nullptr || slotName[0] == '\0') return false;
+		spSlot* slot = spSkeleton_findSlot(m_skeleton, slotName);
+		if (slot == nullptr) return false;
+		RuntimeSlotOverride state;
+		state.alpha = (std::max)(0.0f, (std::min)(1.0f, alpha));
+		state.attachmentMode = attachmentMode;
+		m_slotOverrides[slotName] = state;
+		ApplySlotOverride(slot, state);
+		spSkeleton_updateWorldTransform(m_skeleton);
+		return true;
+	}
+
+	void ClearSlotOverrides() override { m_slotOverrides.clear(); }
 
 	std::string LastError() const override
 	{
@@ -405,6 +531,80 @@ public:
 	}
 
 private:
+	void ApplySlotOverride(spSlot* slot, const RuntimeSlotOverride& state)
+	{
+		if (slot == nullptr) return;
+		if (state.attachmentMode == SlotAttachmentMode::Clear)
+			spSlot_setAttachment(slot, nullptr);
+		else if (state.attachmentMode == SlotAttachmentMode::SetupIfEmpty && slot->attachment == nullptr)
+			spSlot_setToSetupPose(slot);
+		else if (state.attachmentMode == SlotAttachmentMode::NamedIfEmpty && slot->attachment == nullptr)
+		{
+			const int slotIndex = m_skeleton
+				? spSkeleton_findSlotIndex(m_skeleton, slot->data->name) : -1;
+			spAttachment* attachment = slotIndex >= 0
+				? spSkeleton_getAttachmentForSlotIndex(m_skeleton, slotIndex, slot->data->name) : nullptr;
+			if (attachment != nullptr) spSlot_setAttachment(slot, attachment);
+			else spSlot_setToSetupPose(slot);
+		}
+#if defined(SL_SPINE_CPP_LEGACY_COLOR_FIELDS)
+		slot->a = state.alpha;
+#else
+		slot->color.a = state.alpha;
+#endif
+	}
+
+	void ApplySlotOverrides()
+	{
+		if (m_skeleton == nullptr) return;
+		for (const auto& item : m_slotOverrides)
+			ApplySlotOverride(spSkeleton_findSlot(m_skeleton, item.first.c_str()), item.second);
+	}
+
+	void ReapplyCurrentPose()
+	{
+		if (m_state != nullptr && m_skeleton != nullptr)
+			spAnimationState_apply(m_state, m_skeleton);
+		ApplySlotOverrides();
+		if (m_skeleton != nullptr)
+			spSkeleton_updateWorldTransform(m_skeleton);
+	}
+
+	void DisposeCompositeSkin() noexcept
+	{
+		if (m_compositeSkin == nullptr)
+			return;
+		if (m_skeleton != nullptr && m_skeleton->skin == m_compositeSkin)
+			spSkeleton_setSkin(m_skeleton, nullptr);
+
+		SlSkinInternal* skin = reinterpret_cast<SlSkinInternal*>(m_compositeSkin);
+#if defined(SKIN_ENTRIES_HASH_TABLE_SIZE)
+		for (int bucket = 0; bucket < SKIN_ENTRIES_HASH_TABLE_SIZE; ++bucket)
+		{
+			_SkinHashTableEntry* hashEntry = skin->entriesHashTable[bucket];
+			while (hashEntry != nullptr)
+			{
+				_SkinHashTableEntry* next = hashEntry->next;
+				FREE(hashEntry);
+				hashEntry = next;
+			}
+			skin->entriesHashTable[bucket] = nullptr;
+		}
+#endif
+		SlSkinEntry* entry = skin->entries;
+		while (entry != nullptr)
+		{
+			SlSkinEntry* next = entry->next;
+			FREE(entry->name);
+			FREE(entry);
+			entry = next;
+		}
+		skin->entries = nullptr;
+		FREE(m_compositeSkin->name);
+		FREE(m_compositeSkin);
+		m_compositeSkin = nullptr;
+	}
+
 	bool LoadFromFiles(const LoadRequest& request)
 	{
 		if (request.atlasPaths.empty() || request.skeletonPaths.empty())
@@ -458,6 +658,10 @@ private:
 
 		if (binary)
 		{
+#if defined(SL_SPINE_C_NO_BINARY)
+			m_lastError = "This official Spine runtime does not provide binary skeleton loading.";
+			return false;
+#else
 			spSkeletonBinary* binaryLoader = spSkeletonBinary_createWithLoader(loader.Get());
 			if (binaryLoader == nullptr)
 			{
@@ -477,6 +681,7 @@ private:
 			if (m_skeletonData == nullptr && binaryLoader->error != nullptr)
 				m_lastError = binaryLoader->error;
 			spSkeletonBinary_dispose(binaryLoader);
+#endif
 		}
 		else
 		{
@@ -505,8 +710,12 @@ private:
 		m_skeleton = spSkeleton_create(m_skeletonData);
 		m_stateData = spAnimationStateData_create(m_skeletonData);
 		m_state = spAnimationState_create(m_stateData);
+#if !defined(SL_SPINE_C_NO_CLIPPING)
 		m_clipper = spSkeletonClipping_create();
 		if (m_skeleton == nullptr || m_stateData == nullptr || m_state == nullptr || m_clipper == nullptr)
+#else
+		if (m_skeleton == nullptr || m_stateData == nullptr || m_state == nullptr)
+#endif
 		{
 			m_lastError = "Failed to create C runtime skeleton state.";
 			return false;
@@ -578,7 +787,9 @@ private:
 		spMeshAttachment* mesh = reinterpret_cast<spMeshAttachment*>(slot->attachment);
 		int worldVertexCount = 0;
 #if defined(SL_SPINE_C_MESH_COMPUTE_LEGACY)
-#if defined(SL_SPINE_C_MESH_DIRECT_VERTICES)
+#if defined(SL_SPINE_C_MESH_WORLD_VERTICES_LENGTH)
+		worldVertexCount = mesh->super.worldVerticesLength;
+#elif defined(SL_SPINE_C_MESH_DIRECT_VERTICES)
 		worldVertexCount = mesh->verticesCount;
 #else
 		worldVertexCount = mesh->super.verticesCount;
@@ -634,10 +845,40 @@ private:
 	}
 #endif
 
+#if defined(SL_SPINE_C_HAS_WEIGHTED_MESH)
+	void BuildWeightedMeshCommand(spSlot* slot, const Color& skeletonColor, Frame& outFrame)
+	{
+		spWeightedMeshAttachment* mesh = reinterpret_cast<spWeightedMeshAttachment*>(slot->attachment);
+		const int worldVertexCount = mesh->uvsCount;
+		if (worldVertexCount <= 0 || mesh->trianglesCount <= 0)
+			return;
+
+		std::vector<float> worldVertices(static_cast<size_t>(worldVertexCount));
+		spWeightedMeshAttachment_computeWorldVertices(mesh, slot, worldVertices.data());
+
+		spAtlasRegion* atlasRegion = static_cast<spAtlasRegion*>(mesh->rendererObject);
+		const Color meshColor = MakeColor(mesh->r, mesh->g, mesh->b, mesh->a);
+		const Color tint = MultiplyColor(skeletonColor, SlotColor(slot), meshColor);
+		AppendTexturedGeometry(slot,
+			atlasRegion,
+			worldVertices.data(),
+			worldVertexCount,
+			mesh->triangles,
+			mesh->trianglesCount,
+			mesh->uvs,
+			tint,
+			outFrame);
+	}
+#endif
+
 	void FinishClipAtSlot(spSlot* slot)
 	{
+#if !defined(SL_SPINE_C_NO_CLIPPING)
 		if (m_clipper != nullptr && slot != nullptr)
 			spSkeletonClipping_clipEnd(m_clipper, slot);
+#else
+		(void)slot;
+#endif
 	}
 
 	void AppendTexturedGeometry(
@@ -661,6 +902,7 @@ private:
 		int finalVertexCount = worldVertexCount;
 		int finalIndexCount = indexCount;
 
+#if !defined(SL_SPINE_C_NO_CLIPPING)
 		if (m_clipper != nullptr && spSkeletonClipping_isClipping(m_clipper))
 		{
 			spSkeletonClipping_clipTriangles(m_clipper, worldVertices, worldVertexCount, indices, indexCount, uvs, 2);
@@ -670,6 +912,7 @@ private:
 			finalVertexCount = m_clipper->clippedVertices->size;
 			finalIndexCount = m_clipper->clippedTriangles->size;
 		}
+#endif
 
 		if (finalVertexCount <= 0 || finalIndexCount <= 0)
 			return;
@@ -698,14 +941,18 @@ private:
 	spAtlas* m_atlas = nullptr;
 	spSkeletonData* m_skeletonData = nullptr;
 	spSkeleton* m_skeleton = nullptr;
+	spSkin* m_compositeSkin = nullptr;
 	spAnimationStateData* m_stateData = nullptr;
 	spAnimationState* m_state = nullptr;
+#if !defined(SL_SPINE_C_NO_CLIPPING)
 	spSkeletonClipping* m_clipper = nullptr;
+#endif
 	std::vector<std::unique_ptr<RuntimeTexture>> m_textures;
 	std::vector<TextureInfo> m_textureInfos;
 	std::vector<std::string> m_animationNames;
 	std::vector<std::string> m_skinNames;
 	std::vector<std::string> m_slotNames;
+	std::unordered_map<std::string, RuntimeSlotOverride> m_slotOverrides;
 	std::string m_lastError;
 };
 

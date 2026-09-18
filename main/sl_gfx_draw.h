@@ -15,14 +15,24 @@ enum class SlBlendMode
 	Screen,
 };
 
+struct SlMaskDrawCommand
+{
+	std::uint64_t textureId = 0;
+	bool premultipliedAlpha = false;
+	std::vector<SlVertex2D> vertices;
+	std::vector<unsigned short> indices;
+};
+
 struct SlDrawCommand
 {
 	std::uint64_t textureId = 0;
 	std::string slotName;
 	SlBlendMode blendMode = SlBlendMode::Normal;
 	bool premultipliedAlpha = false;
+	bool invertedMask = false;
 	std::vector<SlVertex2D> vertices;
 	std::vector<unsigned short> indices;
+	std::vector<SlMaskDrawCommand> masks;
 };
 
 struct SlDrawList

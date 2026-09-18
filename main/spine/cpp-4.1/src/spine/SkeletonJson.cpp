@@ -1,32 +1,3 @@
-/******************************************************************************
- * Spine Runtimes License Agreement
- * Last updated July 28, 2023. Replaces all prior versions.
- *
- * Copyright (c) 2013-2023, Esoteric Software LLC
- *
- * Integration of the Spine Runtimes into software or otherwise creating
- * derivative works of the Spine Runtimes is permitted under the terms and
- * conditions of Section 2 of the Spine Editor License Agreement:
- * http://esotericsoftware.com/spine-editor-license
- *
- * Otherwise, it is permitted to integrate the Spine Runtimes into software or
- * otherwise create derivative works of the Spine Runtimes (collectively,
- * "Products"), provided that each user of the Products must obtain their own
- * Spine Editor license and redistribution of the Products in any form must
- * include this license and copyright notice.
- *
- * THE SPINE RUNTIMES ARE PROVIDED BY ESOTERIC SOFTWARE LLC "AS IS" AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ESOTERIC SOFTWARE LLC BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
- * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THE
- * SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
-
 #include <spine/SkeletonJson.h>
 
 #include <spine/Atlas.h>
@@ -165,7 +136,6 @@ SkeletonData *SkeletonJson::readSkeletonData(const char *json) {
 		skeletonData->_imagesPath = Json::getString(skeleton, "images", 0);
 	}
 
-	/* Bones. */
 	bones = Json::getItem(root, "bones");
 	skeletonData->_bones.setSize(bones->_size, 0);
 	int bonesCount = 0;
@@ -214,7 +184,6 @@ SkeletonData *SkeletonJson::readSkeletonData(const char *json) {
 		bonesCount++;
 	}
 
-	/* Slots. */
 	slots = Json::getItem(root, "slots");
 	if (slots) {
 		Json *slotMap;
@@ -271,7 +240,6 @@ SkeletonData *SkeletonJson::readSkeletonData(const char *json) {
 		}
 	}
 
-	/* IK constraints. */
 	ik = Json::getItem(root, "ik");
 	if (ik) {
 		Json *constraintMap;
@@ -316,7 +284,6 @@ SkeletonData *SkeletonJson::readSkeletonData(const char *json) {
 		}
 	}
 
-	/* Transform constraints. */
 	transform = Json::getItem(root, "transform");
 	if (transform) {
 		Json *constraintMap;
@@ -370,7 +337,6 @@ SkeletonData *SkeletonJson::readSkeletonData(const char *json) {
 		}
 	}
 
-	/* Path constraints */
 	path = Json::getItem(root, "path");
 	if (path) {
 		Json *constraintMap;
@@ -442,7 +408,6 @@ SkeletonData *SkeletonJson::readSkeletonData(const char *json) {
 		}
 	}
 
-	/* Skins. */
 	skins = Json::getItem(root, "skins");
 	if (skins) {
 		Json *skinMap;
@@ -712,7 +677,6 @@ SkeletonData *SkeletonJson::readSkeletonData(const char *json) {
 		}
 	}
 
-	/* Linked meshes. */
 	int n = (int) _linkedMeshes.size();
 	for (i = 0; i < n; ++i) {
 		LinkedMesh *linkedMesh = _linkedMeshes[i];
@@ -737,7 +701,6 @@ SkeletonData *SkeletonJson::readSkeletonData(const char *json) {
 	ContainerUtil::cleanUpVectorOfPointers(_linkedMeshes);
 	_linkedMeshes.clear();
 
-	/* Events. */
 	events = Json::getItem(root, "events");
 	if (events) {
 		Json *eventMap;
@@ -760,7 +723,6 @@ SkeletonData *SkeletonJson::readSkeletonData(const char *json) {
 		}
 	}
 
-	/* Animations. */
 	animations = Json::getItem(root, "animations");
 	if (animations) {
 		Json *animationMap;
@@ -833,7 +795,7 @@ Timeline *SkeletonJson::readTimeline(Json *keyMap, CurveTimeline1 *timeline, flo
 		value = value2;
 		keyMap = nextMap;
 	}
-	// timeline.shrink(); // BOZO
+
 	return timeline;
 }
 
@@ -860,7 +822,7 @@ Timeline *SkeletonJson::readTimeline(Json *keyMap, CurveTimeline2 *timeline, con
 		value2 = nvalue2;
 		keyMap = nextMap;
 	}
-	// timeline.shrink(); // BOZO
+
 	return timeline;
 }
 
@@ -887,7 +849,6 @@ Animation *SkeletonJson::readAnimation(Json *root, SkeletonData *skeletonData) {
 	int frame, bezier;
 	Color color, color2, newColor, newColor2;
 
-	/** Slot timelines. */
 	for (slotMap = slots ? slots->_child : 0; slotMap; slotMap = slotMap->_next) {
 		int slotIndex = findSlotIndex(skeletonData, slotMap->_name, timelines);
 		if (slotIndex == -1) return NULL;
@@ -912,7 +873,7 @@ Animation *SkeletonJson::readAnimation(Json *root, SkeletonData *skeletonData) {
 					timeline->setFrame(frame, time, color.r, color.g, color.b, color.a);
 					nextMap = keyMap->_next;
 					if (!nextMap) {
-						// timeline.shrink(); // BOZO
+
 						break;
 					}
 					float time2 = Json::getFloat(nextMap, "time", 0);
@@ -939,7 +900,7 @@ Animation *SkeletonJson::readAnimation(Json *root, SkeletonData *skeletonData) {
 					timeline->setFrame(frame, time, color.r, color.g, color.b);
 					nextMap = keyMap->_next;
 					if (!nextMap) {
-						// timeline.shrink(); // BOZO
+
 						break;
 					}
 					float time2 = Json::getFloat(nextMap, "time", 0);
@@ -970,7 +931,7 @@ Animation *SkeletonJson::readAnimation(Json *root, SkeletonData *skeletonData) {
 					timeline->setFrame(frame, time, color.r, color.g, color.b, color.a, color2.r, color2.g, color2.b);
 					nextMap = keyMap->_next;
 					if (!nextMap) {
-						// timeline.shrink(); // BOZO
+
 						break;
 					}
 					float time2 = Json::getFloat(nextMap, "time", 0);
@@ -1003,7 +964,7 @@ Animation *SkeletonJson::readAnimation(Json *root, SkeletonData *skeletonData) {
 					timeline->setFrame(frame, time, color.r, color.g, color.b, color.a, color2.r, color2.g, color2.b);
 					nextMap = keyMap->_next;
 					if (!nextMap) {
-						// timeline.shrink(); // BOZO
+
 						break;
 					}
 					float time2 = Json::getFloat(nextMap, "time", 0);
@@ -1032,7 +993,6 @@ Animation *SkeletonJson::readAnimation(Json *root, SkeletonData *skeletonData) {
 		}
 	}
 
-	/** Bone timelines. */
 	for (boneMap = bones ? bones->_child : 0; boneMap; boneMap = boneMap->_next) {
 		int boneIndex = ContainerUtil::findIndexWithName(skeletonData->_bones, boneMap->_name);
 		if (boneIndex == -1) {
@@ -1093,7 +1053,6 @@ Animation *SkeletonJson::readAnimation(Json *root, SkeletonData *skeletonData) {
 		}
 	}
 
-	/** IK constraint timelines. */
 	for (Json *constraintMap = ik ? ik->_child : 0; constraintMap; constraintMap = constraintMap->_next) {
 		keyMap = constraintMap->_child;
 		if (keyMap == NULL) continue;
@@ -1114,7 +1073,7 @@ Animation *SkeletonJson::readAnimation(Json *root, SkeletonData *skeletonData) {
 							   Json::getBoolean(keyMap, "stretch", false));
 			nextMap = keyMap->_next;
 			if (!nextMap) {
-				// timeline.shrink(); // BOZO
+
 				break;
 			}
 
@@ -1136,7 +1095,6 @@ Animation *SkeletonJson::readAnimation(Json *root, SkeletonData *skeletonData) {
 		timelines.add(timeline);
 	}
 
-	/** Transform constraint timelines. */
 	for (Json *constraintMap = transform ? transform->_child : 0; constraintMap; constraintMap = constraintMap->_next) {
 		keyMap = constraintMap->_child;
 		if (keyMap == NULL) continue;
@@ -1158,7 +1116,7 @@ Animation *SkeletonJson::readAnimation(Json *root, SkeletonData *skeletonData) {
 			timeline->setFrame(frame, time, mixRotate, mixX, mixY, mixScaleX, mixScaleY, mixShearY);
 			nextMap = keyMap->_next;
 			if (!nextMap) {
-				// timeline.shrink(); // BOZO
+
 				break;
 			}
 
@@ -1192,7 +1150,6 @@ Animation *SkeletonJson::readAnimation(Json *root, SkeletonData *skeletonData) {
 		timelines.add(timeline);
 	}
 
-	/** Path constraint timelines. */
 	for (Json *constraintMap = paths ? paths->_child : 0; constraintMap; constraintMap = constraintMap->_next) {
 		PathConstraintData *constraint = skeletonData->findPathConstraint(constraintMap->_name);
 		if (!constraint) {
@@ -1230,7 +1187,7 @@ Animation *SkeletonJson::readAnimation(Json *root, SkeletonData *skeletonData) {
 					timeline->setFrame(frame, time, mixRotate, mixX, mixY);
 					nextMap = keyMap->_next;
 					if (!nextMap) {
-						// timeline.shrink(); // BOZO
+
 						break;
 					}
 					float time2 = Json::getFloat(nextMap, "time", 0);
@@ -1254,7 +1211,6 @@ Animation *SkeletonJson::readAnimation(Json *root, SkeletonData *skeletonData) {
 		}
 	}
 
-	/** Attachment timelines. */
 	for (Json *attachmenstMap = attachments ? attachments->_child : NULL; attachmenstMap; attachmenstMap = attachmenstMap->_next) {
 		Skin *skin = skeletonData->findSkin(attachmenstMap->_name);
 		for (slotMap = attachmenstMap->_child; slotMap; slotMap = slotMap->_next) {
@@ -1315,7 +1271,7 @@ Animation *SkeletonJson::readAnimation(Json *root, SkeletonData *skeletonData) {
 							timeline->setFrame(frame, time, deformed);
 							nextMap = keyMap->_next;
 							if (!nextMap) {
-								// timeline.shrink(); // BOZO
+
 								break;
 							}
 							float time2 = Json::getFloat(nextMap, "time", 0);
@@ -1352,7 +1308,6 @@ Animation *SkeletonJson::readAnimation(Json *root, SkeletonData *skeletonData) {
 		}
 	}
 
-	/** Draw order timeline. */
 	if (drawOrder) {
 		DrawOrderTimeline *timeline = new (__FILE__, __LINE__) DrawOrderTimeline(drawOrder->_size);
 
@@ -1376,17 +1331,16 @@ Animation *SkeletonJson::readAnimation(Json *root, SkeletonData *skeletonData) {
 					int slotIndex = findSlotIndex(skeletonData, Json::getString(offsetMap, "slot", 0), timelines);
 					if (slotIndex == -1) return NULL;
 
-					/* Collect unchanged items. */
 					while (originalIndex != (size_t) slotIndex)
 						unchanged[unchangedIndex++] = (int) originalIndex++;
-					/* Set changed items. */
+
 					drawOrder2[originalIndex + Json::getInt(offsetMap, "offset", 0)] = (int) originalIndex;
 					originalIndex++;
 				}
-				/* Collect remaining unchanged items. */
+
 				while ((int) originalIndex < (int) skeletonData->_slots.size())
 					unchanged[unchangedIndex++] = (int) originalIndex++;
-				/* Fill in unchanged items. */
+
 				for (ii = (int) skeletonData->_slots.size() - 1; ii >= 0; ii--)
 					if (drawOrder2[ii] == -1) drawOrder2[ii] = unchanged[--unchangedIndex];
 			}
@@ -1395,7 +1349,6 @@ Animation *SkeletonJson::readAnimation(Json *root, SkeletonData *skeletonData) {
 		timelines.add(timeline);
 	}
 
-	/** Event timeline. */
 	if (events) {
 		EventTimeline *timeline = new (__FILE__, __LINE__) EventTimeline(events->_size);
 

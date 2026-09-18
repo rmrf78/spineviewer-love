@@ -34,6 +34,8 @@ public:
 	virtual bool LoadBundleFromFiles(const SlFileBundleRequest& request) = 0;
 	virtual bool LoadBundleFromMemory(const SlMemoryBundleRequest& request) = 0;
 	virtual bool AddLayerFromFiles(const SlLayerFileRequest& request) = 0;
+
+	virtual bool AddLayerFromMemory(const SlMemoryBundleRequest&) { return false; }
 	virtual bool ContainsDrawableContent() const noexcept = 0;
 	virtual std::string LastRuntimeIssue() const = 0;
 };

@@ -14,4 +14,3 @@ namespace sl_text
 }
 
 #endif
-

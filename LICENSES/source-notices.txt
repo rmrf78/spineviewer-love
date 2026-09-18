@@ -1,0 +1,1700 @@
+Third-party copyright and license notices retained from the distributed source files.
+
+
+Files:
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+
+// SPDX-FileCopyrightText: 2013 - 2025 Niels Lohmann <https://nlohmann.me>
+
+
+Files:
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+third_party/nlohmann/json.hpp
+
+// SPDX-License-Identifier: MIT
+
+
+Files:
+third_party/nlohmann/json.hpp
+
+// SPDX-FileCopyrightText: 2016 - 2021 Evan Nemerson <evan@nemerson.com>
+
+
+Files:
+third_party/nlohmann/json.hpp
+
+// SPDX-FileCopyrightText: 2018 The Abseil Authors
+
+
+Files:
+third_party/nlohmann/json.hpp
+
+// SPDX-FileCopyrightText: 2008 - 2009 Björn Hoehrmann <bjoern@hoehrmann.de>
+
+
+Files:
+third_party/nlohmann/json.hpp
+
+// SPDX-FileCopyrightText: 2009 Florian Loitsch <https://florian.loitsch.com/>
+
+
+Files:
+third_party/nlohmann/json.hpp
+
+/*!
+@brief implements the Grisu2 algorithm for binary to decimal floating-point
+conversion.
+
+This implementation is a slightly modified version of the reference
+implementation which may be obtained from
+http://florian.loitsch.com/publications (bench.tar.gz).
+
+The code is distributed under the MIT license, Copyright (c) 2009 Florian Loitsch.
+
+For a detailed description of the algorithm see:
+
+[1] Loitsch, "Printing Floating-Point Numbers Quickly and Accurately with
+    Integers", Proceedings of the ACM SIGPLAN 2010 Conference on Programming
+    Language Design and Implementation, PLDI 2010
+[2] Burger, Dybvig, "Printing Floating-Point Numbers Quickly and Accurately",
+    Proceedings of the ACM SIGPLAN 1996 Conference on Programming Language
+    Design and Implementation, PLDI 1996
+*/
+
+
+Files:
+third_party/nlohmann/json.hpp
+
+/*!
+    @brief check whether a string is UTF-8 encoded
+
+    The function checks each byte of a string whether it is UTF-8 encoded. The
+    result of the check is stored in the @a state parameter. The function must
+    be called initially with state 0 (accept). State 1 means the string must
+    be rejected, because the current byte is not allowed. If the string is
+    completely processed, but the state is non-zero, the string ended
+    prematurely; that is, the last byte indicated more bytes should have
+    followed.
+
+    @param[in,out] state  the state of the decoding
+    @param[in,out] codep  codepoint (valid only if resulting state is UTF8_ACCEPT)
+    @param[in] byte       next byte to decode
+    @return               new state
+
+    @note The function has been edited: a std::array is used.
+
+    @copyright Copyright (c) 2008-2009 Bjoern Hoehrmann <bjoern@hoehrmann.de>
+    @sa http://bjoern.hoehrmann.de/utf-8/decoder/dfa/
+    */
+
+
+Files:
+third_party/stb/stb_image.h
+
+/*
+------------------------------------------------------------------------------
+This software is available under 2 licenses -- choose whichever you prefer.
+------------------------------------------------------------------------------
+ALTERNATIVE A - MIT License
+Copyright (c) 2017 Sean Barrett
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+------------------------------------------------------------------------------
+ALTERNATIVE B - Public Domain (www.unlicense.org)
+This is free and unencumbered software released into the public domain.
+Anyone is free to copy, modify, publish, use, compile, sell, or distribute this
+software, either in source code form or as a compiled binary, for any purpose,
+commercial or non-commercial, and by any means.
+In jurisdictions that recognize copyright laws, the author or authors of this
+software dedicate any and all copyright interest in the software to the public
+domain. We make this dedication for the benefit of the public at large and to
+the detriment of our heirs and successors. We intend this dedication to be an
+overt act of relinquishment in perpetuity of all present and future rights to
+this software under copyright law.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+------------------------------------------------------------------------------
+*/
+
+
+Files:
+third_party/live2d/Framework/src/CubismCdiJson.cpp
+third_party/live2d/Framework/src/CubismCdiJson.hpp
+third_party/live2d/Framework/src/CubismDefaultParameterId.cpp
+third_party/live2d/Framework/src/CubismDefaultParameterId.hpp
+third_party/live2d/Framework/src/CubismFramework.cpp
+third_party/live2d/Framework/src/CubismFramework.hpp
+third_party/live2d/Framework/src/CubismFrameworkConfig.hpp
+third_party/live2d/Framework/src/CubismJsonHolder.hpp
+third_party/live2d/Framework/src/CubismModelSettingJson.cpp
+third_party/live2d/Framework/src/CubismModelSettingJson.hpp
+third_party/live2d/Framework/src/ICubismAllocator.hpp
+third_party/live2d/Framework/src/ICubismModelSetting.hpp
+third_party/live2d/Framework/src/Live2DCubismCore.hpp
+third_party/live2d/Framework/src/Effect/CubismBreath.cpp
+third_party/live2d/Framework/src/Effect/CubismBreath.hpp
+third_party/live2d/Framework/src/Effect/CubismEyeBlink.cpp
+third_party/live2d/Framework/src/Effect/CubismEyeBlink.hpp
+third_party/live2d/Framework/src/Effect/CubismPose.cpp
+third_party/live2d/Framework/src/Effect/CubismPose.hpp
+third_party/live2d/Framework/src/Id/CubismId.cpp
+third_party/live2d/Framework/src/Id/CubismId.hpp
+third_party/live2d/Framework/src/Id/CubismIdManager.cpp
+third_party/live2d/Framework/src/Id/CubismIdManager.hpp
+third_party/live2d/Framework/src/Math/CubismMath.cpp
+third_party/live2d/Framework/src/Math/CubismMath.hpp
+third_party/live2d/Framework/src/Math/CubismMatrix44.cpp
+third_party/live2d/Framework/src/Math/CubismMatrix44.hpp
+third_party/live2d/Framework/src/Math/CubismModelMatrix.cpp
+third_party/live2d/Framework/src/Math/CubismModelMatrix.hpp
+third_party/live2d/Framework/src/Math/CubismTargetPoint.cpp
+third_party/live2d/Framework/src/Math/CubismTargetPoint.hpp
+third_party/live2d/Framework/src/Math/CubismVector2.cpp
+third_party/live2d/Framework/src/Math/CubismVector2.hpp
+third_party/live2d/Framework/src/Math/CubismViewMatrix.cpp
+third_party/live2d/Framework/src/Math/CubismViewMatrix.hpp
+third_party/live2d/Framework/src/Model/CubismMoc.cpp
+third_party/live2d/Framework/src/Model/CubismMoc.hpp
+third_party/live2d/Framework/src/Model/CubismModel.cpp
+third_party/live2d/Framework/src/Model/CubismModel.hpp
+third_party/live2d/Framework/src/Model/CubismModelUserData.cpp
+third_party/live2d/Framework/src/Model/CubismModelUserData.hpp
+third_party/live2d/Framework/src/Model/CubismModelUserDataJson.cpp
+third_party/live2d/Framework/src/Model/CubismModelUserDataJson.hpp
+third_party/live2d/Framework/src/Model/CubismUserModel.cpp
+third_party/live2d/Framework/src/Model/CubismUserModel.hpp
+third_party/live2d/Framework/src/Motion/ACubismMotion.cpp
+third_party/live2d/Framework/src/Motion/ACubismMotion.hpp
+third_party/live2d/Framework/src/Motion/CubismExpressionMotion.cpp
+third_party/live2d/Framework/src/Motion/CubismExpressionMotion.hpp
+third_party/live2d/Framework/src/Motion/CubismExpressionMotionManager.cpp
+third_party/live2d/Framework/src/Motion/CubismExpressionMotionManager.hpp
+third_party/live2d/Framework/src/Motion/CubismMotion.cpp
+third_party/live2d/Framework/src/Motion/CubismMotion.hpp
+third_party/live2d/Framework/src/Motion/CubismMotionInternal.hpp
+third_party/live2d/Framework/src/Motion/CubismMotionJson.cpp
+third_party/live2d/Framework/src/Motion/CubismMotionJson.hpp
+third_party/live2d/Framework/src/Motion/CubismMotionManager.cpp
+third_party/live2d/Framework/src/Motion/CubismMotionManager.hpp
+third_party/live2d/Framework/src/Motion/CubismMotionQueueEntry.cpp
+third_party/live2d/Framework/src/Motion/CubismMotionQueueEntry.hpp
+third_party/live2d/Framework/src/Motion/CubismMotionQueueManager.cpp
+third_party/live2d/Framework/src/Motion/CubismMotionQueueManager.hpp
+third_party/live2d/Framework/src/Physics/CubismPhysics.cpp
+third_party/live2d/Framework/src/Physics/CubismPhysics.hpp
+third_party/live2d/Framework/src/Physics/CubismPhysicsInternal.hpp
+third_party/live2d/Framework/src/Physics/CubismPhysicsJson.cpp
+third_party/live2d/Framework/src/Physics/CubismPhysicsJson.hpp
+third_party/live2d/Framework/src/Rendering/CubismClippingManager.hpp
+third_party/live2d/Framework/src/Rendering/CubismRenderer.cpp
+third_party/live2d/Framework/src/Rendering/CubismRenderer.hpp
+third_party/live2d/Framework/src/Type/csmMap.hpp
+third_party/live2d/Framework/src/Type/csmRectF.cpp
+third_party/live2d/Framework/src/Type/csmRectF.hpp
+third_party/live2d/Framework/src/Type/csmString.cpp
+third_party/live2d/Framework/src/Type/csmString.hpp
+third_party/live2d/Framework/src/Type/csmVector.hpp
+third_party/live2d/Framework/src/Type/CubismBasicType.hpp
+third_party/live2d/Framework/src/Utils/CubismDebug.cpp
+third_party/live2d/Framework/src/Utils/CubismDebug.hpp
+third_party/live2d/Framework/src/Utils/CubismJson.cpp
+third_party/live2d/Framework/src/Utils/CubismJson.hpp
+third_party/live2d/Framework/src/Utils/CubismString.cpp
+third_party/live2d/Framework/src/Utils/CubismString.hpp
+third_party/live2d/Framework/src/Rendering/Cocos2d/CubismCommandBuffer_Cocos2dx.cpp
+third_party/live2d/Framework/src/Rendering/Cocos2d/CubismCommandBuffer_Cocos2dx.hpp
+third_party/live2d/Framework/src/Rendering/Cocos2d/CubismOffscreenSurface_Cocos2dx.cpp
+third_party/live2d/Framework/src/Rendering/Cocos2d/CubismOffscreenSurface_Cocos2dx.hpp
+third_party/live2d/Framework/src/Rendering/Cocos2d/CubismRenderer_Cocos2dx.cpp
+third_party/live2d/Framework/src/Rendering/Cocos2d/CubismRenderer_Cocos2dx.hpp
+third_party/live2d/Framework/src/Rendering/Cocos2d/CubismShader_Cocos2dx.cpp
+third_party/live2d/Framework/src/Rendering/Cocos2d/CubismShader_Cocos2dx.hpp
+third_party/live2d/Framework/src/Rendering/D3D11/CubismNativeInclude_D3D11.hpp
+third_party/live2d/Framework/src/Rendering/D3D11/CubismOffscreenSurface_D3D11.cpp
+third_party/live2d/Framework/src/Rendering/D3D11/CubismOffscreenSurface_D3D11.hpp
+third_party/live2d/Framework/src/Rendering/D3D11/CubismRenderer_D3D11.cpp
+third_party/live2d/Framework/src/Rendering/D3D11/CubismRenderer_D3D11.hpp
+third_party/live2d/Framework/src/Rendering/D3D11/CubismRenderState_D3D11.cpp
+third_party/live2d/Framework/src/Rendering/D3D11/CubismRenderState_D3D11.hpp
+third_party/live2d/Framework/src/Rendering/D3D11/CubismShader_D3D11.cpp
+third_party/live2d/Framework/src/Rendering/D3D11/CubismShader_D3D11.hpp
+third_party/live2d/Framework/src/Rendering/D3D11/CubismType_D3D11.hpp
+third_party/live2d/Framework/src/Rendering/D3D9/CubismNativeInclude_D3D9.hpp
+third_party/live2d/Framework/src/Rendering/D3D9/CubismOffscreenSurface_D3D9.cpp
+third_party/live2d/Framework/src/Rendering/D3D9/CubismOffscreenSurface_D3D9.hpp
+third_party/live2d/Framework/src/Rendering/D3D9/CubismRenderer_D3D9.cpp
+third_party/live2d/Framework/src/Rendering/D3D9/CubismRenderer_D3D9.hpp
+third_party/live2d/Framework/src/Rendering/D3D9/CubismRenderState_D3D9.cpp
+third_party/live2d/Framework/src/Rendering/D3D9/CubismRenderState_D3D9.hpp
+third_party/live2d/Framework/src/Rendering/D3D9/CubismShader_D3D9.cpp
+third_party/live2d/Framework/src/Rendering/D3D9/CubismShader_D3D9.hpp
+third_party/live2d/Framework/src/Rendering/D3D9/CubismType_D3D9.hpp
+third_party/live2d/Framework/src/Rendering/Metal/CubismCommandBuffer_Metal.hpp
+third_party/live2d/Framework/src/Rendering/Metal/CubismOffscreenSurface_Metal.hpp
+third_party/live2d/Framework/src/Rendering/Metal/CubismRenderer_Metal.hpp
+third_party/live2d/Framework/src/Rendering/Metal/CubismRenderingInstanceSingleton_Metal.h
+third_party/live2d/Framework/src/Rendering/Metal/CubismShader_Metal.hpp
+third_party/live2d/Framework/src/Rendering/Metal/MetalShaderTypes.h
+third_party/live2d/Framework/src/Rendering/OpenGL/CubismOffscreenSurface_OpenGLES2.cpp
+third_party/live2d/Framework/src/Rendering/OpenGL/CubismOffscreenSurface_OpenGLES2.hpp
+third_party/live2d/Framework/src/Rendering/OpenGL/CubismRenderer_OpenGLES2.cpp
+third_party/live2d/Framework/src/Rendering/OpenGL/CubismRenderer_OpenGLES2.hpp
+third_party/live2d/Framework/src/Rendering/OpenGL/CubismShader_OpenGLES2.cpp
+third_party/live2d/Framework/src/Rendering/OpenGL/CubismShader_OpenGLES2.hpp
+third_party/live2d/Framework/src/Rendering/Vulkan/CubismClass_Vulkan.cpp
+third_party/live2d/Framework/src/Rendering/Vulkan/CubismClass_Vulkan.hpp
+third_party/live2d/Framework/src/Rendering/Vulkan/CubismOffscreenSurface_Vulkan.cpp
+third_party/live2d/Framework/src/Rendering/Vulkan/CubismOffscreenSurface_Vulkan.hpp
+third_party/live2d/Framework/src/Rendering/Vulkan/CubismRenderer_Vulkan.cpp
+third_party/live2d/Framework/src/Rendering/Vulkan/CubismRenderer_Vulkan.hpp
+
+/**
+ * Copyright(c) Live2D Inc. All rights reserved.
+ *
+ * Use of this source code is governed by the Live2D Open Software license
+ * that can be found at https://www.live2d.com/eula/live2d-open-software-license-agreement_en.html.
+ */
+
+
+Files:
+third_party/live2d/Core/include/Live2DCubismCore.h
+
+/**
+ * Copyright(c) Live2D Inc. All rights reserved.
+ *
+ * Use of this source code is governed by the Live2D Proprietary Software license
+ * that can be found at https://www.live2d.com/eula/live2d-proprietary-software-license-agreement_en.html.
+ */
+
+
+Files:
+main/spine/cpp-4.2/src/spine/Animation.cpp
+main/spine/cpp-4.2/src/spine/AnimationState.cpp
+main/spine/cpp-4.2/src/spine/AnimationStateData.cpp
+main/spine/cpp-4.2/src/spine/Atlas.cpp
+main/spine/cpp-4.2/src/spine/AtlasAttachmentLoader.cpp
+main/spine/cpp-4.2/src/spine/Attachment.cpp
+main/spine/cpp-4.2/src/spine/AttachmentLoader.cpp
+main/spine/cpp-4.2/src/spine/AttachmentTimeline.cpp
+main/spine/cpp-4.2/src/spine/Bone.cpp
+main/spine/cpp-4.2/src/spine/BoneData.cpp
+main/spine/cpp-4.2/src/spine/BoundingBoxAttachment.cpp
+main/spine/cpp-4.2/src/spine/ClippingAttachment.cpp
+main/spine/cpp-4.2/src/spine/ColorTimeline.cpp
+main/spine/cpp-4.2/src/spine/ConstraintData.cpp
+main/spine/cpp-4.2/src/spine/CurveTimeline.cpp
+main/spine/cpp-4.2/src/spine/DeformTimeline.cpp
+main/spine/cpp-4.2/src/spine/DrawOrderTimeline.cpp
+main/spine/cpp-4.2/src/spine/Event.cpp
+main/spine/cpp-4.2/src/spine/EventData.cpp
+main/spine/cpp-4.2/src/spine/EventTimeline.cpp
+main/spine/cpp-4.2/src/spine/Extension.cpp
+main/spine/cpp-4.2/src/spine/IkConstraint.cpp
+main/spine/cpp-4.2/src/spine/IkConstraintData.cpp
+main/spine/cpp-4.2/src/spine/IkConstraintTimeline.cpp
+main/spine/cpp-4.2/src/spine/InheritTimeline.cpp
+main/spine/cpp-4.2/src/spine/LinkedMesh.cpp
+main/spine/cpp-4.2/src/spine/Log.cpp
+main/spine/cpp-4.2/src/spine/MathUtil.cpp
+main/spine/cpp-4.2/src/spine/MeshAttachment.cpp
+main/spine/cpp-4.2/src/spine/PathAttachment.cpp
+main/spine/cpp-4.2/src/spine/PathConstraint.cpp
+main/spine/cpp-4.2/src/spine/PathConstraintData.cpp
+main/spine/cpp-4.2/src/spine/PathConstraintMixTimeline.cpp
+main/spine/cpp-4.2/src/spine/PathConstraintPositionTimeline.cpp
+main/spine/cpp-4.2/src/spine/PathConstraintSpacingTimeline.cpp
+main/spine/cpp-4.2/src/spine/PhysicsConstraint.cpp
+main/spine/cpp-4.2/src/spine/PhysicsConstraintData.cpp
+main/spine/cpp-4.2/src/spine/PhysicsConstraintTimeline.cpp
+main/spine/cpp-4.2/src/spine/PointAttachment.cpp
+main/spine/cpp-4.2/src/spine/RegionAttachment.cpp
+main/spine/cpp-4.2/src/spine/RotateTimeline.cpp
+main/spine/cpp-4.2/src/spine/RTTI.cpp
+main/spine/cpp-4.2/src/spine/ScaleTimeline.cpp
+main/spine/cpp-4.2/src/spine/Sequence.cpp
+main/spine/cpp-4.2/src/spine/SequenceTimeline.cpp
+main/spine/cpp-4.2/src/spine/ShearTimeline.cpp
+main/spine/cpp-4.2/src/spine/Skeleton.cpp
+main/spine/cpp-4.2/src/spine/SkeletonBinary.cpp
+main/spine/cpp-4.2/src/spine/SkeletonBounds.cpp
+main/spine/cpp-4.2/src/spine/SkeletonClipping.cpp
+main/spine/cpp-4.2/src/spine/SkeletonData.cpp
+main/spine/cpp-4.2/src/spine/SkeletonJson.cpp
+main/spine/cpp-4.2/src/spine/SkeletonRenderer.cpp
+main/spine/cpp-4.2/src/spine/Skin.cpp
+main/spine/cpp-4.2/src/spine/Slot.cpp
+main/spine/cpp-4.2/src/spine/SlotData.cpp
+main/spine/cpp-4.2/src/spine/SpineObject.cpp
+main/spine/cpp-4.2/src/spine/TextureLoader.cpp
+main/spine/cpp-4.2/src/spine/Timeline.cpp
+main/spine/cpp-4.2/src/spine/TransformConstraint.cpp
+main/spine/cpp-4.2/src/spine/TransformConstraintData.cpp
+main/spine/cpp-4.2/src/spine/TransformConstraintTimeline.cpp
+main/spine/cpp-4.2/src/spine/TranslateTimeline.cpp
+main/spine/cpp-4.2/src/spine/Triangulator.cpp
+main/spine/cpp-4.2/src/spine/Updatable.cpp
+main/spine/cpp-4.2/src/spine/VertexAttachment.cpp
+main/spine/cpp-4.2/include/spine/Animation.h
+main/spine/cpp-4.2/include/spine/AnimationState.h
+main/spine/cpp-4.2/include/spine/AnimationStateData.h
+main/spine/cpp-4.2/include/spine/Atlas.h
+main/spine/cpp-4.2/include/spine/AtlasAttachmentLoader.h
+main/spine/cpp-4.2/include/spine/Attachment.h
+main/spine/cpp-4.2/include/spine/AttachmentLoader.h
+main/spine/cpp-4.2/include/spine/AttachmentTimeline.h
+main/spine/cpp-4.2/include/spine/AttachmentType.h
+main/spine/cpp-4.2/include/spine/BlendMode.h
+main/spine/cpp-4.2/include/spine/BlockAllocator.h
+main/spine/cpp-4.2/include/spine/Bone.h
+main/spine/cpp-4.2/include/spine/BoneData.h
+main/spine/cpp-4.2/include/spine/BoundingBoxAttachment.h
+main/spine/cpp-4.2/include/spine/ClippingAttachment.h
+main/spine/cpp-4.2/include/spine/Color.h
+main/spine/cpp-4.2/include/spine/ColorTimeline.h
+main/spine/cpp-4.2/include/spine/ConstraintData.h
+main/spine/cpp-4.2/include/spine/ContainerUtil.h
+main/spine/cpp-4.2/include/spine/CurveTimeline.h
+main/spine/cpp-4.2/include/spine/Debug.h
+main/spine/cpp-4.2/include/spine/DeformTimeline.h
+main/spine/cpp-4.2/include/spine/dll.h
+main/spine/cpp-4.2/include/spine/DrawOrderTimeline.h
+main/spine/cpp-4.2/include/spine/Event.h
+main/spine/cpp-4.2/include/spine/EventData.h
+main/spine/cpp-4.2/include/spine/EventTimeline.h
+main/spine/cpp-4.2/include/spine/Extension.h
+main/spine/cpp-4.2/include/spine/HashMap.h
+main/spine/cpp-4.2/include/spine/HasRendererObject.h
+main/spine/cpp-4.2/include/spine/IkConstraint.h
+main/spine/cpp-4.2/include/spine/IkConstraintData.h
+main/spine/cpp-4.2/include/spine/IkConstraintTimeline.h
+main/spine/cpp-4.2/include/spine/Inherit.h
+main/spine/cpp-4.2/include/spine/InheritTimeline.h
+main/spine/cpp-4.2/include/spine/Json.h
+main/spine/cpp-4.2/include/spine/LinkedMesh.h
+main/spine/cpp-4.2/include/spine/Log.h
+main/spine/cpp-4.2/include/spine/MathUtil.h
+main/spine/cpp-4.2/include/spine/MeshAttachment.h
+main/spine/cpp-4.2/include/spine/MixBlend.h
+main/spine/cpp-4.2/include/spine/MixDirection.h
+main/spine/cpp-4.2/include/spine/PathAttachment.h
+main/spine/cpp-4.2/include/spine/PathConstraint.h
+main/spine/cpp-4.2/include/spine/PathConstraintData.h
+main/spine/cpp-4.2/include/spine/PathConstraintMixTimeline.h
+main/spine/cpp-4.2/include/spine/PathConstraintPositionTimeline.h
+main/spine/cpp-4.2/include/spine/PathConstraintSpacingTimeline.h
+main/spine/cpp-4.2/include/spine/Physics.h
+main/spine/cpp-4.2/include/spine/PhysicsConstraint.h
+main/spine/cpp-4.2/include/spine/PhysicsConstraintData.h
+main/spine/cpp-4.2/include/spine/PhysicsConstraintTimeline.h
+main/spine/cpp-4.2/include/spine/PointAttachment.h
+main/spine/cpp-4.2/include/spine/Pool.h
+main/spine/cpp-4.2/include/spine/PositionMode.h
+main/spine/cpp-4.2/include/spine/Property.h
+main/spine/cpp-4.2/include/spine/RegionAttachment.h
+main/spine/cpp-4.2/include/spine/RotateMode.h
+main/spine/cpp-4.2/include/spine/RotateTimeline.h
+main/spine/cpp-4.2/include/spine/RTTI.h
+main/spine/cpp-4.2/include/spine/ScaleTimeline.h
+main/spine/cpp-4.2/include/spine/Sequence.h
+main/spine/cpp-4.2/include/spine/SequenceTimeline.h
+main/spine/cpp-4.2/include/spine/ShearTimeline.h
+main/spine/cpp-4.2/include/spine/Skeleton.h
+main/spine/cpp-4.2/include/spine/SkeletonBinary.h
+main/spine/cpp-4.2/include/spine/SkeletonBounds.h
+main/spine/cpp-4.2/include/spine/SkeletonClipping.h
+main/spine/cpp-4.2/include/spine/SkeletonData.h
+main/spine/cpp-4.2/include/spine/SkeletonJson.h
+main/spine/cpp-4.2/include/spine/SkeletonRenderer.h
+main/spine/cpp-4.2/include/spine/Skin.h
+main/spine/cpp-4.2/include/spine/Slot.h
+main/spine/cpp-4.2/include/spine/SlotData.h
+main/spine/cpp-4.2/include/spine/SpacingMode.h
+main/spine/cpp-4.2/include/spine/spine.h
+main/spine/cpp-4.2/include/spine/SpineObject.h
+main/spine/cpp-4.2/include/spine/SpineString.h
+main/spine/cpp-4.2/include/spine/TextureLoader.h
+main/spine/cpp-4.2/include/spine/TextureRegion.h
+main/spine/cpp-4.2/include/spine/Timeline.h
+main/spine/cpp-4.2/include/spine/TransformConstraint.h
+main/spine/cpp-4.2/include/spine/TransformConstraintData.h
+main/spine/cpp-4.2/include/spine/TransformConstraintTimeline.h
+main/spine/cpp-4.2/include/spine/TranslateTimeline.h
+main/spine/cpp-4.2/include/spine/Triangulator.h
+main/spine/cpp-4.2/include/spine/Updatable.h
+main/spine/cpp-4.2/include/spine/Vector.h
+main/spine/cpp-4.2/include/spine/Version.h
+main/spine/cpp-4.2/include/spine/VertexAttachment.h
+main/spine/cpp-4.2/include/spine/Vertices.h
+
+/******************************************************************************
+ * Spine Runtimes License Agreement
+ * Last updated April 5, 2025. Replaces all prior versions.
+ *
+ * Copyright (c) 2013-2025, Esoteric Software LLC
+ *
+ * Integration of the Spine Runtimes into software or otherwise creating
+ * derivative works of the Spine Runtimes is permitted under the terms and
+ * conditions of Section 2 of the Spine Editor License Agreement:
+ * http://esotericsoftware.com/spine-editor-license
+ *
+ * Otherwise, it is permitted to integrate the Spine Runtimes into software
+ * or otherwise create derivative works of the Spine Runtimes (collectively,
+ * "Products"), provided that each user of the Products must obtain their own
+ * Spine Editor license and redistribution of the Products in any form must
+ * include this license and copyright notice.
+ *
+ * THE SPINE RUNTIMES ARE PROVIDED BY ESOTERIC SOFTWARE LLC "AS IS" AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL ESOTERIC SOFTWARE LLC BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
+ * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *****************************************************************************/
+
+
+Files:
+main/spine/cpp-4.2/src/spine/Json.cpp
+main/spine/cpp-4.1/src/spine/Json.cpp
+main/spine/cpp-4.0/src/spine/Json.cpp
+main/spine/cpp-3.8/src/spine/Json.cpp
+
+/*
+Copyright (c) 2009, Dave Gamble
+Copyright (c) 2013, Esoteric Software
+
+Permission is hereby granted, dispose of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+
+
+Files:
+main/spine/cpp-4.1/src/spine/Animation.cpp
+main/spine/cpp-4.1/src/spine/AnimationState.cpp
+main/spine/cpp-4.1/src/spine/AnimationStateData.cpp
+main/spine/cpp-4.1/src/spine/Atlas.cpp
+main/spine/cpp-4.1/src/spine/AtlasAttachmentLoader.cpp
+main/spine/cpp-4.1/src/spine/Attachment.cpp
+main/spine/cpp-4.1/src/spine/AttachmentLoader.cpp
+main/spine/cpp-4.1/src/spine/AttachmentTimeline.cpp
+main/spine/cpp-4.1/src/spine/Bone.cpp
+main/spine/cpp-4.1/src/spine/BoneData.cpp
+main/spine/cpp-4.1/src/spine/BoundingBoxAttachment.cpp
+main/spine/cpp-4.1/src/spine/ClippingAttachment.cpp
+main/spine/cpp-4.1/src/spine/ColorTimeline.cpp
+main/spine/cpp-4.1/src/spine/ConstraintData.cpp
+main/spine/cpp-4.1/src/spine/CurveTimeline.cpp
+main/spine/cpp-4.1/src/spine/DeformTimeline.cpp
+main/spine/cpp-4.1/src/spine/DrawOrderTimeline.cpp
+main/spine/cpp-4.1/src/spine/Event.cpp
+main/spine/cpp-4.1/src/spine/EventData.cpp
+main/spine/cpp-4.1/src/spine/EventTimeline.cpp
+main/spine/cpp-4.1/src/spine/Extension.cpp
+main/spine/cpp-4.1/src/spine/IkConstraint.cpp
+main/spine/cpp-4.1/src/spine/IkConstraintData.cpp
+main/spine/cpp-4.1/src/spine/IkConstraintTimeline.cpp
+main/spine/cpp-4.1/src/spine/LinkedMesh.cpp
+main/spine/cpp-4.1/src/spine/Log.cpp
+main/spine/cpp-4.1/src/spine/MathUtil.cpp
+main/spine/cpp-4.1/src/spine/MeshAttachment.cpp
+main/spine/cpp-4.1/src/spine/PathAttachment.cpp
+main/spine/cpp-4.1/src/spine/PathConstraint.cpp
+main/spine/cpp-4.1/src/spine/PathConstraintData.cpp
+main/spine/cpp-4.1/src/spine/PathConstraintMixTimeline.cpp
+main/spine/cpp-4.1/src/spine/PathConstraintPositionTimeline.cpp
+main/spine/cpp-4.1/src/spine/PathConstraintSpacingTimeline.cpp
+main/spine/cpp-4.1/src/spine/PointAttachment.cpp
+main/spine/cpp-4.1/src/spine/RegionAttachment.cpp
+main/spine/cpp-4.1/src/spine/RotateTimeline.cpp
+main/spine/cpp-4.1/src/spine/RTTI.cpp
+main/spine/cpp-4.1/src/spine/ScaleTimeline.cpp
+main/spine/cpp-4.1/src/spine/Sequence.cpp
+main/spine/cpp-4.1/src/spine/SequenceTimeline.cpp
+main/spine/cpp-4.1/src/spine/ShearTimeline.cpp
+main/spine/cpp-4.1/src/spine/Skeleton.cpp
+main/spine/cpp-4.1/src/spine/SkeletonBinary.cpp
+main/spine/cpp-4.1/src/spine/SkeletonBounds.cpp
+main/spine/cpp-4.1/src/spine/SkeletonClipping.cpp
+main/spine/cpp-4.1/src/spine/SkeletonData.cpp
+main/spine/cpp-4.1/src/spine/SkeletonJson.cpp
+main/spine/cpp-4.1/src/spine/Skin.cpp
+main/spine/cpp-4.1/src/spine/Slot.cpp
+main/spine/cpp-4.1/src/spine/SlotData.cpp
+main/spine/cpp-4.1/src/spine/SpineObject.cpp
+main/spine/cpp-4.1/src/spine/TextureLoader.cpp
+main/spine/cpp-4.1/src/spine/Timeline.cpp
+main/spine/cpp-4.1/src/spine/TransformConstraint.cpp
+main/spine/cpp-4.1/src/spine/TransformConstraintData.cpp
+main/spine/cpp-4.1/src/spine/TransformConstraintTimeline.cpp
+main/spine/cpp-4.1/src/spine/TranslateTimeline.cpp
+main/spine/cpp-4.1/src/spine/Triangulator.cpp
+main/spine/cpp-4.1/src/spine/Updatable.cpp
+main/spine/cpp-4.1/src/spine/VertexAttachment.cpp
+main/spine/cpp-4.1/include/spine/Animation.h
+main/spine/cpp-4.1/include/spine/AnimationState.h
+main/spine/cpp-4.1/include/spine/AnimationStateData.h
+main/spine/cpp-4.1/include/spine/Atlas.h
+main/spine/cpp-4.1/include/spine/AtlasAttachmentLoader.h
+main/spine/cpp-4.1/include/spine/Attachment.h
+main/spine/cpp-4.1/include/spine/AttachmentLoader.h
+main/spine/cpp-4.1/include/spine/AttachmentTimeline.h
+main/spine/cpp-4.1/include/spine/AttachmentType.h
+main/spine/cpp-4.1/include/spine/BlendMode.h
+main/spine/cpp-4.1/include/spine/Bone.h
+main/spine/cpp-4.1/include/spine/BoneData.h
+main/spine/cpp-4.1/include/spine/BoundingBoxAttachment.h
+main/spine/cpp-4.1/include/spine/ClippingAttachment.h
+main/spine/cpp-4.1/include/spine/Color.h
+main/spine/cpp-4.1/include/spine/ColorTimeline.h
+main/spine/cpp-4.1/include/spine/ConstraintData.h
+main/spine/cpp-4.1/include/spine/ContainerUtil.h
+main/spine/cpp-4.1/include/spine/CurveTimeline.h
+main/spine/cpp-4.1/include/spine/Debug.h
+main/spine/cpp-4.1/include/spine/DeformTimeline.h
+main/spine/cpp-4.1/include/spine/dll.h
+main/spine/cpp-4.1/include/spine/DrawOrderTimeline.h
+main/spine/cpp-4.1/include/spine/Event.h
+main/spine/cpp-4.1/include/spine/EventData.h
+main/spine/cpp-4.1/include/spine/EventTimeline.h
+main/spine/cpp-4.1/include/spine/Extension.h
+main/spine/cpp-4.1/include/spine/HashMap.h
+main/spine/cpp-4.1/include/spine/HasRendererObject.h
+main/spine/cpp-4.1/include/spine/IkConstraint.h
+main/spine/cpp-4.1/include/spine/IkConstraintData.h
+main/spine/cpp-4.1/include/spine/IkConstraintTimeline.h
+main/spine/cpp-4.1/include/spine/Json.h
+main/spine/cpp-4.1/include/spine/LinkedMesh.h
+main/spine/cpp-4.1/include/spine/Log.h
+main/spine/cpp-4.1/include/spine/MathUtil.h
+main/spine/cpp-4.1/include/spine/MeshAttachment.h
+main/spine/cpp-4.1/include/spine/MixBlend.h
+main/spine/cpp-4.1/include/spine/MixDirection.h
+main/spine/cpp-4.1/include/spine/PathAttachment.h
+main/spine/cpp-4.1/include/spine/PathConstraint.h
+main/spine/cpp-4.1/include/spine/PathConstraintData.h
+main/spine/cpp-4.1/include/spine/PathConstraintMixTimeline.h
+main/spine/cpp-4.1/include/spine/PathConstraintPositionTimeline.h
+main/spine/cpp-4.1/include/spine/PathConstraintSpacingTimeline.h
+main/spine/cpp-4.1/include/spine/PointAttachment.h
+main/spine/cpp-4.1/include/spine/Pool.h
+main/spine/cpp-4.1/include/spine/PositionMode.h
+main/spine/cpp-4.1/include/spine/Property.h
+main/spine/cpp-4.1/include/spine/RegionAttachment.h
+main/spine/cpp-4.1/include/spine/RotateMode.h
+main/spine/cpp-4.1/include/spine/RotateTimeline.h
+main/spine/cpp-4.1/include/spine/RTTI.h
+main/spine/cpp-4.1/include/spine/ScaleTimeline.h
+main/spine/cpp-4.1/include/spine/Sequence.h
+main/spine/cpp-4.1/include/spine/SequenceTimeline.h
+main/spine/cpp-4.1/include/spine/ShearTimeline.h
+main/spine/cpp-4.1/include/spine/Skeleton.h
+main/spine/cpp-4.1/include/spine/SkeletonBinary.h
+main/spine/cpp-4.1/include/spine/SkeletonBounds.h
+main/spine/cpp-4.1/include/spine/SkeletonClipping.h
+main/spine/cpp-4.1/include/spine/SkeletonData.h
+main/spine/cpp-4.1/include/spine/SkeletonJson.h
+main/spine/cpp-4.1/include/spine/Skin.h
+main/spine/cpp-4.1/include/spine/Slot.h
+main/spine/cpp-4.1/include/spine/SlotData.h
+main/spine/cpp-4.1/include/spine/SpacingMode.h
+main/spine/cpp-4.1/include/spine/spine.h
+main/spine/cpp-4.1/include/spine/SpineObject.h
+main/spine/cpp-4.1/include/spine/SpineString.h
+main/spine/cpp-4.1/include/spine/TextureLoader.h
+main/spine/cpp-4.1/include/spine/TextureRegion.h
+main/spine/cpp-4.1/include/spine/Timeline.h
+main/spine/cpp-4.1/include/spine/TransformConstraint.h
+main/spine/cpp-4.1/include/spine/TransformConstraintData.h
+main/spine/cpp-4.1/include/spine/TransformConstraintTimeline.h
+main/spine/cpp-4.1/include/spine/TransformMode.h
+main/spine/cpp-4.1/include/spine/TranslateTimeline.h
+main/spine/cpp-4.1/include/spine/Triangulator.h
+main/spine/cpp-4.1/include/spine/Updatable.h
+main/spine/cpp-4.1/include/spine/Vector.h
+main/spine/cpp-4.1/include/spine/Version.h
+main/spine/cpp-4.1/include/spine/VertexAttachment.h
+main/spine/cpp-4.1/include/spine/Vertices.h
+
+/******************************************************************************
+ * Spine Runtimes License Agreement
+ * Last updated July 28, 2023. Replaces all prior versions.
+ *
+ * Copyright (c) 2013-2023, Esoteric Software LLC
+ *
+ * Integration of the Spine Runtimes into software or otherwise creating
+ * derivative works of the Spine Runtimes is permitted under the terms and
+ * conditions of Section 2 of the Spine Editor License Agreement:
+ * http://esotericsoftware.com/spine-editor-license
+ *
+ * Otherwise, it is permitted to integrate the Spine Runtimes into software or
+ * otherwise create derivative works of the Spine Runtimes (collectively,
+ * "Products"), provided that each user of the Products must obtain their own
+ * Spine Editor license and redistribution of the Products in any form must
+ * include this license and copyright notice.
+ *
+ * THE SPINE RUNTIMES ARE PROVIDED BY ESOTERIC SOFTWARE LLC "AS IS" AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL ESOTERIC SOFTWARE LLC BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
+ * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THE
+ * SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *****************************************************************************/
+
+
+Files:
+main/spine/cpp-4.0/src/spine/Animation.cpp
+main/spine/cpp-4.0/src/spine/AnimationState.cpp
+main/spine/cpp-4.0/src/spine/AnimationStateData.cpp
+main/spine/cpp-4.0/src/spine/Atlas.cpp
+main/spine/cpp-4.0/src/spine/AtlasAttachmentLoader.cpp
+main/spine/cpp-4.0/src/spine/Attachment.cpp
+main/spine/cpp-4.0/src/spine/AttachmentLoader.cpp
+main/spine/cpp-4.0/src/spine/AttachmentTimeline.cpp
+main/spine/cpp-4.0/src/spine/Bone.cpp
+main/spine/cpp-4.0/src/spine/BoneData.cpp
+main/spine/cpp-4.0/src/spine/BoundingBoxAttachment.cpp
+main/spine/cpp-4.0/src/spine/ClippingAttachment.cpp
+main/spine/cpp-4.0/src/spine/ColorTimeline.cpp
+main/spine/cpp-4.0/src/spine/ConstraintData.cpp
+main/spine/cpp-4.0/src/spine/CurveTimeline.cpp
+main/spine/cpp-4.0/src/spine/DeformTimeline.cpp
+main/spine/cpp-4.0/src/spine/DrawOrderTimeline.cpp
+main/spine/cpp-4.0/src/spine/Event.cpp
+main/spine/cpp-4.0/src/spine/EventData.cpp
+main/spine/cpp-4.0/src/spine/EventTimeline.cpp
+main/spine/cpp-4.0/src/spine/Extension.cpp
+main/spine/cpp-4.0/src/spine/IkConstraint.cpp
+main/spine/cpp-4.0/src/spine/IkConstraintData.cpp
+main/spine/cpp-4.0/src/spine/IkConstraintTimeline.cpp
+main/spine/cpp-4.0/src/spine/LinkedMesh.cpp
+main/spine/cpp-4.0/src/spine/Log.cpp
+main/spine/cpp-4.0/src/spine/MathUtil.cpp
+main/spine/cpp-4.0/src/spine/MeshAttachment.cpp
+main/spine/cpp-4.0/src/spine/PathAttachment.cpp
+main/spine/cpp-4.0/src/spine/PathConstraint.cpp
+main/spine/cpp-4.0/src/spine/PathConstraintData.cpp
+main/spine/cpp-4.0/src/spine/PathConstraintMixTimeline.cpp
+main/spine/cpp-4.0/src/spine/PathConstraintPositionTimeline.cpp
+main/spine/cpp-4.0/src/spine/PathConstraintSpacingTimeline.cpp
+main/spine/cpp-4.0/src/spine/PointAttachment.cpp
+main/spine/cpp-4.0/src/spine/RegionAttachment.cpp
+main/spine/cpp-4.0/src/spine/RotateTimeline.cpp
+main/spine/cpp-4.0/src/spine/RTTI.cpp
+main/spine/cpp-4.0/src/spine/ScaleTimeline.cpp
+main/spine/cpp-4.0/src/spine/ShearTimeline.cpp
+main/spine/cpp-4.0/src/spine/Skeleton.cpp
+main/spine/cpp-4.0/src/spine/SkeletonBinary.cpp
+main/spine/cpp-4.0/src/spine/SkeletonBounds.cpp
+main/spine/cpp-4.0/src/spine/SkeletonClipping.cpp
+main/spine/cpp-4.0/src/spine/SkeletonData.cpp
+main/spine/cpp-4.0/src/spine/SkeletonJson.cpp
+main/spine/cpp-4.0/src/spine/Skin.cpp
+main/spine/cpp-4.0/src/spine/Slot.cpp
+main/spine/cpp-4.0/src/spine/SlotData.cpp
+main/spine/cpp-4.0/src/spine/SpineObject.cpp
+main/spine/cpp-4.0/src/spine/TextureLoader.cpp
+main/spine/cpp-4.0/src/spine/Timeline.cpp
+main/spine/cpp-4.0/src/spine/TransformConstraint.cpp
+main/spine/cpp-4.0/src/spine/TransformConstraintData.cpp
+main/spine/cpp-4.0/src/spine/TransformConstraintTimeline.cpp
+main/spine/cpp-4.0/src/spine/TranslateTimeline.cpp
+main/spine/cpp-4.0/src/spine/Triangulator.cpp
+main/spine/cpp-4.0/src/spine/Updatable.cpp
+main/spine/cpp-4.0/src/spine/VertexAttachment.cpp
+main/spine/cpp-4.0/src/spine/VertexEffect.cpp
+main/spine/cpp-4.0/include/spine/Animation.h
+main/spine/cpp-4.0/include/spine/AnimationState.h
+main/spine/cpp-4.0/include/spine/AnimationStateData.h
+main/spine/cpp-4.0/include/spine/Atlas.h
+main/spine/cpp-4.0/include/spine/AtlasAttachmentLoader.h
+main/spine/cpp-4.0/include/spine/Attachment.h
+main/spine/cpp-4.0/include/spine/AttachmentLoader.h
+main/spine/cpp-4.0/include/spine/AttachmentTimeline.h
+main/spine/cpp-4.0/include/spine/AttachmentType.h
+main/spine/cpp-4.0/include/spine/BlendMode.h
+main/spine/cpp-4.0/include/spine/Bone.h
+main/spine/cpp-4.0/include/spine/BoneData.h
+main/spine/cpp-4.0/include/spine/BoundingBoxAttachment.h
+main/spine/cpp-4.0/include/spine/ClippingAttachment.h
+main/spine/cpp-4.0/include/spine/Color.h
+main/spine/cpp-4.0/include/spine/ColorTimeline.h
+main/spine/cpp-4.0/include/spine/ConstraintData.h
+main/spine/cpp-4.0/include/spine/ContainerUtil.h
+main/spine/cpp-4.0/include/spine/CurveTimeline.h
+main/spine/cpp-4.0/include/spine/Debug.h
+main/spine/cpp-4.0/include/spine/DeformTimeline.h
+main/spine/cpp-4.0/include/spine/dll.h
+main/spine/cpp-4.0/include/spine/DrawOrderTimeline.h
+main/spine/cpp-4.0/include/spine/Event.h
+main/spine/cpp-4.0/include/spine/EventData.h
+main/spine/cpp-4.0/include/spine/EventTimeline.h
+main/spine/cpp-4.0/include/spine/Extension.h
+main/spine/cpp-4.0/include/spine/HashMap.h
+main/spine/cpp-4.0/include/spine/HasRendererObject.h
+main/spine/cpp-4.0/include/spine/IkConstraint.h
+main/spine/cpp-4.0/include/spine/IkConstraintData.h
+main/spine/cpp-4.0/include/spine/IkConstraintTimeline.h
+main/spine/cpp-4.0/include/spine/Json.h
+main/spine/cpp-4.0/include/spine/LinkedMesh.h
+main/spine/cpp-4.0/include/spine/Log.h
+main/spine/cpp-4.0/include/spine/MathUtil.h
+main/spine/cpp-4.0/include/spine/MeshAttachment.h
+main/spine/cpp-4.0/include/spine/MixBlend.h
+main/spine/cpp-4.0/include/spine/MixDirection.h
+main/spine/cpp-4.0/include/spine/PathAttachment.h
+main/spine/cpp-4.0/include/spine/PathConstraint.h
+main/spine/cpp-4.0/include/spine/PathConstraintData.h
+main/spine/cpp-4.0/include/spine/PathConstraintMixTimeline.h
+main/spine/cpp-4.0/include/spine/PathConstraintPositionTimeline.h
+main/spine/cpp-4.0/include/spine/PathConstraintSpacingTimeline.h
+main/spine/cpp-4.0/include/spine/PointAttachment.h
+main/spine/cpp-4.0/include/spine/Pool.h
+main/spine/cpp-4.0/include/spine/PositionMode.h
+main/spine/cpp-4.0/include/spine/Property.h
+main/spine/cpp-4.0/include/spine/RegionAttachment.h
+main/spine/cpp-4.0/include/spine/RotateMode.h
+main/spine/cpp-4.0/include/spine/RotateTimeline.h
+main/spine/cpp-4.0/include/spine/RTTI.h
+main/spine/cpp-4.0/include/spine/ScaleTimeline.h
+main/spine/cpp-4.0/include/spine/ShearTimeline.h
+main/spine/cpp-4.0/include/spine/Skeleton.h
+main/spine/cpp-4.0/include/spine/SkeletonBinary.h
+main/spine/cpp-4.0/include/spine/SkeletonBounds.h
+main/spine/cpp-4.0/include/spine/SkeletonClipping.h
+main/spine/cpp-4.0/include/spine/SkeletonData.h
+main/spine/cpp-4.0/include/spine/SkeletonJson.h
+main/spine/cpp-4.0/include/spine/Skin.h
+main/spine/cpp-4.0/include/spine/Slot.h
+main/spine/cpp-4.0/include/spine/SlotData.h
+main/spine/cpp-4.0/include/spine/SpacingMode.h
+main/spine/cpp-4.0/include/spine/spine.h
+main/spine/cpp-4.0/include/spine/SpineObject.h
+main/spine/cpp-4.0/include/spine/SpineString.h
+main/spine/cpp-4.0/include/spine/TextureLoader.h
+main/spine/cpp-4.0/include/spine/Timeline.h
+main/spine/cpp-4.0/include/spine/TransformConstraint.h
+main/spine/cpp-4.0/include/spine/TransformConstraintData.h
+main/spine/cpp-4.0/include/spine/TransformConstraintTimeline.h
+main/spine/cpp-4.0/include/spine/TransformMode.h
+main/spine/cpp-4.0/include/spine/TranslateTimeline.h
+main/spine/cpp-4.0/include/spine/Triangulator.h
+main/spine/cpp-4.0/include/spine/Updatable.h
+main/spine/cpp-4.0/include/spine/Vector.h
+main/spine/cpp-4.0/include/spine/VertexAttachment.h
+main/spine/cpp-4.0/include/spine/VertexEffect.h
+main/spine/cpp-4.0/include/spine/Vertices.h
+main/spine/cpp-3.8/src/spine/Animation.cpp
+main/spine/cpp-3.8/src/spine/AnimationState.cpp
+main/spine/cpp-3.8/src/spine/AnimationStateData.cpp
+main/spine/cpp-3.8/src/spine/Atlas.cpp
+main/spine/cpp-3.8/src/spine/AtlasAttachmentLoader.cpp
+main/spine/cpp-3.8/src/spine/Attachment.cpp
+main/spine/cpp-3.8/src/spine/AttachmentLoader.cpp
+main/spine/cpp-3.8/src/spine/AttachmentTimeline.cpp
+main/spine/cpp-3.8/src/spine/Bone.cpp
+main/spine/cpp-3.8/src/spine/BoneData.cpp
+main/spine/cpp-3.8/src/spine/BoundingBoxAttachment.cpp
+main/spine/cpp-3.8/src/spine/ClippingAttachment.cpp
+main/spine/cpp-3.8/src/spine/ColorTimeline.cpp
+main/spine/cpp-3.8/src/spine/ConstraintData.cpp
+main/spine/cpp-3.8/src/spine/CurveTimeline.cpp
+main/spine/cpp-3.8/src/spine/DeformTimeline.cpp
+main/spine/cpp-3.8/src/spine/DrawOrderTimeline.cpp
+main/spine/cpp-3.8/src/spine/Event.cpp
+main/spine/cpp-3.8/src/spine/EventData.cpp
+main/spine/cpp-3.8/src/spine/EventTimeline.cpp
+main/spine/cpp-3.8/src/spine/Extension.cpp
+main/spine/cpp-3.8/src/spine/IkConstraint.cpp
+main/spine/cpp-3.8/src/spine/IkConstraintData.cpp
+main/spine/cpp-3.8/src/spine/IkConstraintTimeline.cpp
+main/spine/cpp-3.8/src/spine/LinkedMesh.cpp
+main/spine/cpp-3.8/src/spine/MathUtil.cpp
+main/spine/cpp-3.8/src/spine/MeshAttachment.cpp
+main/spine/cpp-3.8/src/spine/PathAttachment.cpp
+main/spine/cpp-3.8/src/spine/PathConstraint.cpp
+main/spine/cpp-3.8/src/spine/PathConstraintData.cpp
+main/spine/cpp-3.8/src/spine/PathConstraintMixTimeline.cpp
+main/spine/cpp-3.8/src/spine/PathConstraintPositionTimeline.cpp
+main/spine/cpp-3.8/src/spine/PathConstraintSpacingTimeline.cpp
+main/spine/cpp-3.8/src/spine/PointAttachment.cpp
+main/spine/cpp-3.8/src/spine/RegionAttachment.cpp
+main/spine/cpp-3.8/src/spine/RotateTimeline.cpp
+main/spine/cpp-3.8/src/spine/RTTI.cpp
+main/spine/cpp-3.8/src/spine/ScaleTimeline.cpp
+main/spine/cpp-3.8/src/spine/ShearTimeline.cpp
+main/spine/cpp-3.8/src/spine/Skeleton.cpp
+main/spine/cpp-3.8/src/spine/SkeletonBinary.cpp
+main/spine/cpp-3.8/src/spine/SkeletonBounds.cpp
+main/spine/cpp-3.8/src/spine/SkeletonClipping.cpp
+main/spine/cpp-3.8/src/spine/SkeletonData.cpp
+main/spine/cpp-3.8/src/spine/SkeletonJson.cpp
+main/spine/cpp-3.8/src/spine/Skin.cpp
+main/spine/cpp-3.8/src/spine/Slot.cpp
+main/spine/cpp-3.8/src/spine/SlotData.cpp
+main/spine/cpp-3.8/src/spine/SpineObject.cpp
+main/spine/cpp-3.8/src/spine/TextureLoader.cpp
+main/spine/cpp-3.8/src/spine/Timeline.cpp
+main/spine/cpp-3.8/src/spine/TransformConstraint.cpp
+main/spine/cpp-3.8/src/spine/TransformConstraintData.cpp
+main/spine/cpp-3.8/src/spine/TransformConstraintTimeline.cpp
+main/spine/cpp-3.8/src/spine/TranslateTimeline.cpp
+main/spine/cpp-3.8/src/spine/Triangulator.cpp
+main/spine/cpp-3.8/src/spine/TwoColorTimeline.cpp
+main/spine/cpp-3.8/src/spine/Updatable.cpp
+main/spine/cpp-3.8/src/spine/VertexAttachment.cpp
+main/spine/cpp-3.8/src/spine/VertexEffect.cpp
+main/spine/cpp-3.8/include/spine/Animation.h
+main/spine/cpp-3.8/include/spine/AnimationState.h
+main/spine/cpp-3.8/include/spine/AnimationStateData.h
+main/spine/cpp-3.8/include/spine/Atlas.h
+main/spine/cpp-3.8/include/spine/AtlasAttachmentLoader.h
+main/spine/cpp-3.8/include/spine/Attachment.h
+main/spine/cpp-3.8/include/spine/AttachmentLoader.h
+main/spine/cpp-3.8/include/spine/AttachmentTimeline.h
+main/spine/cpp-3.8/include/spine/AttachmentType.h
+main/spine/cpp-3.8/include/spine/BlendMode.h
+main/spine/cpp-3.8/include/spine/Bone.h
+main/spine/cpp-3.8/include/spine/BoneData.h
+main/spine/cpp-3.8/include/spine/BoundingBoxAttachment.h
+main/spine/cpp-3.8/include/spine/ClippingAttachment.h
+main/spine/cpp-3.8/include/spine/Color.h
+main/spine/cpp-3.8/include/spine/ColorTimeline.h
+main/spine/cpp-3.8/include/spine/ConstraintData.h
+main/spine/cpp-3.8/include/spine/ContainerUtil.h
+main/spine/cpp-3.8/include/spine/CurveTimeline.h
+main/spine/cpp-3.8/include/spine/Debug.h
+main/spine/cpp-3.8/include/spine/DeformTimeline.h
+main/spine/cpp-3.8/include/spine/dll.h
+main/spine/cpp-3.8/include/spine/DrawOrderTimeline.h
+main/spine/cpp-3.8/include/spine/Event.h
+main/spine/cpp-3.8/include/spine/EventData.h
+main/spine/cpp-3.8/include/spine/EventTimeline.h
+main/spine/cpp-3.8/include/spine/Extension.h
+main/spine/cpp-3.8/include/spine/HashMap.h
+main/spine/cpp-3.8/include/spine/HasRendererObject.h
+main/spine/cpp-3.8/include/spine/IkConstraint.h
+main/spine/cpp-3.8/include/spine/IkConstraintData.h
+main/spine/cpp-3.8/include/spine/IkConstraintTimeline.h
+main/spine/cpp-3.8/include/spine/Json.h
+main/spine/cpp-3.8/include/spine/LinkedMesh.h
+main/spine/cpp-3.8/include/spine/MathUtil.h
+main/spine/cpp-3.8/include/spine/MeshAttachment.h
+main/spine/cpp-3.8/include/spine/MixBlend.h
+main/spine/cpp-3.8/include/spine/MixDirection.h
+main/spine/cpp-3.8/include/spine/PathAttachment.h
+main/spine/cpp-3.8/include/spine/PathConstraint.h
+main/spine/cpp-3.8/include/spine/PathConstraintData.h
+main/spine/cpp-3.8/include/spine/PathConstraintMixTimeline.h
+main/spine/cpp-3.8/include/spine/PathConstraintPositionTimeline.h
+main/spine/cpp-3.8/include/spine/PathConstraintSpacingTimeline.h
+main/spine/cpp-3.8/include/spine/PointAttachment.h
+main/spine/cpp-3.8/include/spine/Pool.h
+main/spine/cpp-3.8/include/spine/PositionMode.h
+main/spine/cpp-3.8/include/spine/RegionAttachment.h
+main/spine/cpp-3.8/include/spine/RotateMode.h
+main/spine/cpp-3.8/include/spine/RotateTimeline.h
+main/spine/cpp-3.8/include/spine/RTTI.h
+main/spine/cpp-3.8/include/spine/ScaleTimeline.h
+main/spine/cpp-3.8/include/spine/ShearTimeline.h
+main/spine/cpp-3.8/include/spine/Skeleton.h
+main/spine/cpp-3.8/include/spine/SkeletonBinary.h
+main/spine/cpp-3.8/include/spine/SkeletonBounds.h
+main/spine/cpp-3.8/include/spine/SkeletonClipping.h
+main/spine/cpp-3.8/include/spine/SkeletonData.h
+main/spine/cpp-3.8/include/spine/SkeletonJson.h
+main/spine/cpp-3.8/include/spine/Skin.h
+main/spine/cpp-3.8/include/spine/Slot.h
+main/spine/cpp-3.8/include/spine/SlotData.h
+main/spine/cpp-3.8/include/spine/SpacingMode.h
+main/spine/cpp-3.8/include/spine/spine.h
+main/spine/cpp-3.8/include/spine/SpineObject.h
+main/spine/cpp-3.8/include/spine/SpineString.h
+main/spine/cpp-3.8/include/spine/TextureLoader.h
+main/spine/cpp-3.8/include/spine/Timeline.h
+main/spine/cpp-3.8/include/spine/TimelineType.h
+main/spine/cpp-3.8/include/spine/TransformConstraint.h
+main/spine/cpp-3.8/include/spine/TransformConstraintData.h
+main/spine/cpp-3.8/include/spine/TransformConstraintTimeline.h
+main/spine/cpp-3.8/include/spine/TransformMode.h
+main/spine/cpp-3.8/include/spine/TranslateTimeline.h
+main/spine/cpp-3.8/include/spine/Triangulator.h
+main/spine/cpp-3.8/include/spine/TwoColorTimeline.h
+main/spine/cpp-3.8/include/spine/Updatable.h
+main/spine/cpp-3.8/include/spine/Vector.h
+main/spine/cpp-3.8/include/spine/VertexAttachment.h
+main/spine/cpp-3.8/include/spine/VertexEffect.h
+main/spine/cpp-3.8/include/spine/Vertices.h
+
+/******************************************************************************
+ * Spine Runtimes License Agreement
+ * Last updated January 1, 2020. Replaces all prior versions.
+ *
+ * Copyright (c) 2013-2020, Esoteric Software LLC
+ *
+ * Integration of the Spine Runtimes into software or otherwise creating
+ * derivative works of the Spine Runtimes is permitted under the terms and
+ * conditions of Section 2 of the Spine Editor License Agreement:
+ * http://esotericsoftware.com/spine-editor-license
+ *
+ * Otherwise, it is permitted to integrate the Spine Runtimes into software
+ * or otherwise create derivative works of the Spine Runtimes (collectively,
+ * "Products"), provided that each user of the Products must obtain their own
+ * Spine Editor license and redistribution of the Products in any form must
+ * include this license and copyright notice.
+ *
+ * THE SPINE RUNTIMES ARE PROVIDED BY ESOTERIC SOFTWARE LLC "AS IS" AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL ESOTERIC SOFTWARE LLC BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
+ * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *****************************************************************************/
+
+
+Files:
+main/spine/cpp-3.7/src/spine/Animation.cpp
+main/spine/cpp-3.7/src/spine/AnimationState.cpp
+main/spine/cpp-3.7/src/spine/AnimationStateData.cpp
+main/spine/cpp-3.7/src/spine/Array.cpp
+main/spine/cpp-3.7/src/spine/Atlas.cpp
+main/spine/cpp-3.7/src/spine/AtlasAttachmentLoader.cpp
+main/spine/cpp-3.7/src/spine/Attachment.cpp
+main/spine/cpp-3.7/src/spine/AttachmentLoader.cpp
+main/spine/cpp-3.7/src/spine/Bone.cpp
+main/spine/cpp-3.7/src/spine/BoneData.cpp
+main/spine/cpp-3.7/src/spine/BoundingBoxAttachment.cpp
+main/spine/cpp-3.7/src/spine/ClippingAttachment.cpp
+main/spine/cpp-3.7/src/spine/Color.cpp
+main/spine/cpp-3.7/src/spine/Event.cpp
+main/spine/cpp-3.7/src/spine/EventData.cpp
+main/spine/cpp-3.7/src/spine/extension.cpp
+main/spine/cpp-3.7/src/spine/IkConstraint.cpp
+main/spine/cpp-3.7/src/spine/IkConstraintData.cpp
+main/spine/cpp-3.7/src/spine/MeshAttachment.cpp
+main/spine/cpp-3.7/src/spine/PathAttachment.cpp
+main/spine/cpp-3.7/src/spine/PathConstraint.cpp
+main/spine/cpp-3.7/src/spine/PathConstraintData.cpp
+main/spine/cpp-3.7/src/spine/PointAttachment.cpp
+main/spine/cpp-3.7/src/spine/RegionAttachment.cpp
+main/spine/cpp-3.7/src/spine/Skeleton.cpp
+main/spine/cpp-3.7/src/spine/SkeletonBinary.cpp
+main/spine/cpp-3.7/src/spine/SkeletonBounds.cpp
+main/spine/cpp-3.7/src/spine/SkeletonClipping.cpp
+main/spine/cpp-3.7/src/spine/SkeletonData.cpp
+main/spine/cpp-3.7/src/spine/SkeletonJson.cpp
+main/spine/cpp-3.7/src/spine/Skin.cpp
+main/spine/cpp-3.7/src/spine/Slot.cpp
+main/spine/cpp-3.7/src/spine/SlotData.cpp
+main/spine/cpp-3.7/src/spine/TransformConstraint.cpp
+main/spine/cpp-3.7/src/spine/TransformConstraintData.cpp
+main/spine/cpp-3.7/src/spine/Triangulator.cpp
+main/spine/cpp-3.7/src/spine/VertexAttachment.cpp
+main/spine/cpp-3.7/src/spine/VertexEffect.cpp
+main/spine/cpp-3.7/include/spine/Animation.h
+main/spine/cpp-3.7/include/spine/AnimationState.h
+main/spine/cpp-3.7/include/spine/AnimationStateData.h
+main/spine/cpp-3.7/include/spine/Array.h
+main/spine/cpp-3.7/include/spine/Atlas.h
+main/spine/cpp-3.7/include/spine/AtlasAttachmentLoader.h
+main/spine/cpp-3.7/include/spine/Attachment.h
+main/spine/cpp-3.7/include/spine/AttachmentLoader.h
+main/spine/cpp-3.7/include/spine/Bone.h
+main/spine/cpp-3.7/include/spine/BoneData.h
+main/spine/cpp-3.7/include/spine/BoundingBoxAttachment.h
+main/spine/cpp-3.7/include/spine/ClippingAttachment.h
+main/spine/cpp-3.7/include/spine/Color.h
+main/spine/cpp-3.7/include/spine/dll.h
+main/spine/cpp-3.7/include/spine/Event.h
+main/spine/cpp-3.7/include/spine/EventData.h
+main/spine/cpp-3.7/include/spine/extension.h
+main/spine/cpp-3.7/include/spine/IkConstraint.h
+main/spine/cpp-3.7/include/spine/IkConstraintData.h
+main/spine/cpp-3.7/include/spine/MeshAttachment.h
+main/spine/cpp-3.7/include/spine/PathAttachment.h
+main/spine/cpp-3.7/include/spine/PathConstraint.h
+main/spine/cpp-3.7/include/spine/PathConstraintData.h
+main/spine/cpp-3.7/include/spine/PointAttachment.h
+main/spine/cpp-3.7/include/spine/RegionAttachment.h
+main/spine/cpp-3.7/include/spine/Skeleton.h
+main/spine/cpp-3.7/include/spine/SkeletonBinary.h
+main/spine/cpp-3.7/include/spine/SkeletonBounds.h
+main/spine/cpp-3.7/include/spine/SkeletonClipping.h
+main/spine/cpp-3.7/include/spine/SkeletonData.h
+main/spine/cpp-3.7/include/spine/SkeletonJson.h
+main/spine/cpp-3.7/include/spine/Skin.h
+main/spine/cpp-3.7/include/spine/Slot.h
+main/spine/cpp-3.7/include/spine/SlotData.h
+main/spine/cpp-3.7/include/spine/spine.h
+main/spine/cpp-3.7/include/spine/TransformConstraint.h
+main/spine/cpp-3.7/include/spine/TransformConstraintData.h
+main/spine/cpp-3.7/include/spine/Triangulator.h
+main/spine/cpp-3.7/include/spine/VertexAttachment.h
+main/spine/cpp-3.7/include/spine/VertexEffect.h
+
+/******************************************************************************
+ * Spine Runtimes License Agreement
+ * Last updated May 1, 2019. Replaces all prior versions.
+ *
+ * Copyright (c) 2013-2019, Esoteric Software LLC
+ *
+ * Integration of the Spine Runtimes into software or otherwise creating
+ * derivative works of the Spine Runtimes is permitted under the terms and
+ * conditions of Section 2 of the Spine Editor License Agreement:
+ * http://esotericsoftware.com/spine-editor-license
+ *
+ * Otherwise, it is permitted to integrate the Spine Runtimes into software
+ * or otherwise create derivative works of the Spine Runtimes (collectively,
+ * "Products"), provided that each user of the Products must obtain their own
+ * Spine Editor license and redistribution of the Products in any form must
+ * include this license and copyright notice.
+ *
+ * THIS SOFTWARE IS PROVIDED BY ESOTERIC SOFTWARE LLC "AS IS" AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN
+ * NO EVENT SHALL ESOTERIC SOFTWARE LLC BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES, BUSINESS
+ * INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *****************************************************************************/
+
+
+Files:
+main/spine/cpp-3.7/src/spine/Json.cpp
+main/spine/cpp-3.6/src/spine/Json.cpp
+main/spine/cpp-3.5/src/spine/Json.cpp
+main/spine/c-3.4/src/spine/Json.c
+main/spine/c-3.1/src/spine/Json.c
+
+/*
+ Copyright (c) 2009, Dave Gamble
+ Copyright (c) 2013, Esoteric Software
+
+ Permission is hereby granted, dispose of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ */
+
+
+Files:
+main/spine/cpp-3.7/src/spine/Json.h
+main/spine/cpp-3.6/src/spine/Json.h
+main/spine/cpp-3.5/src/spine/Json.h
+main/spine/c-3.4/src/spine/Json.h
+main/spine/c-3.1/src/spine/Json.h
+
+/*
+ Copyright (c) 2009 Dave Gamble
+ 
+ Permission is hereby granted, dispose of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ 
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ */
+
+
+Files:
+main/spine/cpp-3.6/src/spine/Animation.cpp
+main/spine/cpp-3.6/src/spine/AnimationState.cpp
+main/spine/cpp-3.6/src/spine/AnimationStateData.cpp
+main/spine/cpp-3.6/src/spine/Array.cpp
+main/spine/cpp-3.6/src/spine/AtlasAttachmentLoader.cpp
+main/spine/cpp-3.6/src/spine/Attachment.cpp
+main/spine/cpp-3.6/src/spine/AttachmentLoader.cpp
+main/spine/cpp-3.6/src/spine/Bone.cpp
+main/spine/cpp-3.6/src/spine/BoneData.cpp
+main/spine/cpp-3.6/src/spine/BoundingBoxAttachment.cpp
+main/spine/cpp-3.6/src/spine/ClippingAttachment.cpp
+main/spine/cpp-3.6/src/spine/Color.cpp
+main/spine/cpp-3.6/src/spine/Event.cpp
+main/spine/cpp-3.6/src/spine/EventData.cpp
+main/spine/cpp-3.6/src/spine/extension.cpp
+main/spine/cpp-3.6/src/spine/IkConstraint.cpp
+main/spine/cpp-3.6/src/spine/IkConstraintData.cpp
+main/spine/cpp-3.6/src/spine/MeshAttachment.cpp
+main/spine/cpp-3.6/src/spine/PathAttachment.cpp
+main/spine/cpp-3.6/src/spine/PathConstraint.cpp
+main/spine/cpp-3.6/src/spine/PathConstraintData.cpp
+main/spine/cpp-3.6/src/spine/PointAttachment.cpp
+main/spine/cpp-3.6/src/spine/RegionAttachment.cpp
+main/spine/cpp-3.6/src/spine/Skeleton.cpp
+main/spine/cpp-3.6/src/spine/SkeletonBinary.cpp
+main/spine/cpp-3.6/src/spine/SkeletonBounds.cpp
+main/spine/cpp-3.6/src/spine/SkeletonClipping.cpp
+main/spine/cpp-3.6/src/spine/SkeletonData.cpp
+main/spine/cpp-3.6/src/spine/SkeletonJson.cpp
+main/spine/cpp-3.6/src/spine/Skin.cpp
+main/spine/cpp-3.6/src/spine/Slot.cpp
+main/spine/cpp-3.6/src/spine/SlotData.cpp
+main/spine/cpp-3.6/src/spine/TransformConstraint.cpp
+main/spine/cpp-3.6/src/spine/TransformConstraintData.cpp
+main/spine/cpp-3.6/src/spine/Triangulator.cpp
+main/spine/cpp-3.6/src/spine/VertexAttachment.cpp
+main/spine/cpp-3.6/src/spine/VertexEffect.cpp
+main/spine/cpp-3.6/include/spine/Animation.h
+main/spine/cpp-3.6/include/spine/AnimationState.h
+main/spine/cpp-3.6/include/spine/AnimationStateData.h
+main/spine/cpp-3.6/include/spine/Array.h
+main/spine/cpp-3.6/include/spine/Atlas.h
+main/spine/cpp-3.6/include/spine/AtlasAttachmentLoader.h
+main/spine/cpp-3.6/include/spine/Attachment.h
+main/spine/cpp-3.6/include/spine/AttachmentLoader.h
+main/spine/cpp-3.6/include/spine/Bone.h
+main/spine/cpp-3.6/include/spine/BoneData.h
+main/spine/cpp-3.6/include/spine/BoundingBoxAttachment.h
+main/spine/cpp-3.6/include/spine/ClippingAttachment.h
+main/spine/cpp-3.6/include/spine/Color.h
+main/spine/cpp-3.6/include/spine/Event.h
+main/spine/cpp-3.6/include/spine/EventData.h
+main/spine/cpp-3.6/include/spine/extension.h
+main/spine/cpp-3.6/include/spine/IkConstraint.h
+main/spine/cpp-3.6/include/spine/IkConstraintData.h
+main/spine/cpp-3.6/include/spine/MeshAttachment.h
+main/spine/cpp-3.6/include/spine/PathAttachment.h
+main/spine/cpp-3.6/include/spine/PathConstraint.h
+main/spine/cpp-3.6/include/spine/PathConstraintData.h
+main/spine/cpp-3.6/include/spine/PointAttachment.h
+main/spine/cpp-3.6/include/spine/RegionAttachment.h
+main/spine/cpp-3.6/include/spine/Skeleton.h
+main/spine/cpp-3.6/include/spine/SkeletonBinary.h
+main/spine/cpp-3.6/include/spine/SkeletonBounds.h
+main/spine/cpp-3.6/include/spine/SkeletonClipping.h
+main/spine/cpp-3.6/include/spine/SkeletonData.h
+main/spine/cpp-3.6/include/spine/SkeletonJson.h
+main/spine/cpp-3.6/include/spine/Skin.h
+main/spine/cpp-3.6/include/spine/Slot.h
+main/spine/cpp-3.6/include/spine/SlotData.h
+main/spine/cpp-3.6/include/spine/spine.h
+main/spine/cpp-3.6/include/spine/TransformConstraint.h
+main/spine/cpp-3.6/include/spine/TransformConstraintData.h
+main/spine/cpp-3.6/include/spine/Triangulator.h
+main/spine/cpp-3.6/include/spine/VertexAttachment.h
+main/spine/cpp-3.6/include/spine/VertexEffect.h
+main/spine/cpp-3.5/src/spine/Animation.cpp
+main/spine/cpp-3.5/src/spine/AnimationState.cpp
+main/spine/cpp-3.5/src/spine/AnimationStateData.cpp
+main/spine/cpp-3.5/src/spine/Array.cpp
+main/spine/cpp-3.5/src/spine/AtlasAttachmentLoader.cpp
+main/spine/cpp-3.5/src/spine/Attachment.cpp
+main/spine/cpp-3.5/src/spine/AttachmentLoader.cpp
+main/spine/cpp-3.5/src/spine/Bone.cpp
+main/spine/cpp-3.5/src/spine/BoneData.cpp
+main/spine/cpp-3.5/src/spine/BoundingBoxAttachment.cpp
+main/spine/cpp-3.5/src/spine/ClippingAttachment.cpp
+main/spine/cpp-3.5/src/spine/Color.cpp
+main/spine/cpp-3.5/src/spine/Event.cpp
+main/spine/cpp-3.5/src/spine/EventData.cpp
+main/spine/cpp-3.5/src/spine/extension.cpp
+main/spine/cpp-3.5/src/spine/IkConstraint.cpp
+main/spine/cpp-3.5/src/spine/IkConstraintData.cpp
+main/spine/cpp-3.5/src/spine/MeshAttachment.cpp
+main/spine/cpp-3.5/src/spine/PathAttachment.cpp
+main/spine/cpp-3.5/src/spine/PathConstraint.cpp
+main/spine/cpp-3.5/src/spine/PathConstraintData.cpp
+main/spine/cpp-3.5/src/spine/PointAttachment.cpp
+main/spine/cpp-3.5/src/spine/RegionAttachment.cpp
+main/spine/cpp-3.5/src/spine/Skeleton.cpp
+main/spine/cpp-3.5/src/spine/SkeletonBinary.cpp
+main/spine/cpp-3.5/src/spine/SkeletonBounds.cpp
+main/spine/cpp-3.5/src/spine/SkeletonClipping.cpp
+main/spine/cpp-3.5/src/spine/SkeletonData.cpp
+main/spine/cpp-3.5/src/spine/SkeletonJson.cpp
+main/spine/cpp-3.5/src/spine/Skin.cpp
+main/spine/cpp-3.5/src/spine/Slot.cpp
+main/spine/cpp-3.5/src/spine/SlotData.cpp
+main/spine/cpp-3.5/src/spine/TransformConstraint.cpp
+main/spine/cpp-3.5/src/spine/TransformConstraintData.cpp
+main/spine/cpp-3.5/src/spine/Triangulator.cpp
+main/spine/cpp-3.5/src/spine/VertexAttachment.cpp
+main/spine/cpp-3.5/include/spine/Animation.h
+main/spine/cpp-3.5/include/spine/AnimationState.h
+main/spine/cpp-3.5/include/spine/AnimationStateData.h
+main/spine/cpp-3.5/include/spine/Array.h
+main/spine/cpp-3.5/include/spine/Atlas.h
+main/spine/cpp-3.5/include/spine/AtlasAttachmentLoader.h
+main/spine/cpp-3.5/include/spine/Attachment.h
+main/spine/cpp-3.5/include/spine/AttachmentLoader.h
+main/spine/cpp-3.5/include/spine/Bone.h
+main/spine/cpp-3.5/include/spine/BoneData.h
+main/spine/cpp-3.5/include/spine/BoundingBoxAttachment.h
+main/spine/cpp-3.5/include/spine/ClippingAttachment.h
+main/spine/cpp-3.5/include/spine/Color.h
+main/spine/cpp-3.5/include/spine/Event.h
+main/spine/cpp-3.5/include/spine/EventData.h
+main/spine/cpp-3.5/include/spine/extension.h
+main/spine/cpp-3.5/include/spine/IkConstraint.h
+main/spine/cpp-3.5/include/spine/IkConstraintData.h
+main/spine/cpp-3.5/include/spine/MeshAttachment.h
+main/spine/cpp-3.5/include/spine/PathAttachment.h
+main/spine/cpp-3.5/include/spine/PathConstraint.h
+main/spine/cpp-3.5/include/spine/PathConstraintData.h
+main/spine/cpp-3.5/include/spine/PointAttachment.h
+main/spine/cpp-3.5/include/spine/RegionAttachment.h
+main/spine/cpp-3.5/include/spine/Skeleton.h
+main/spine/cpp-3.5/include/spine/SkeletonBinary.h
+main/spine/cpp-3.5/include/spine/SkeletonBounds.h
+main/spine/cpp-3.5/include/spine/SkeletonClipping.h
+main/spine/cpp-3.5/include/spine/SkeletonData.h
+main/spine/cpp-3.5/include/spine/SkeletonJson.h
+main/spine/cpp-3.5/include/spine/Skin.h
+main/spine/cpp-3.5/include/spine/Slot.h
+main/spine/cpp-3.5/include/spine/SlotData.h
+main/spine/cpp-3.5/include/spine/spine.h
+main/spine/cpp-3.5/include/spine/TransformConstraint.h
+main/spine/cpp-3.5/include/spine/TransformConstraintData.h
+main/spine/cpp-3.5/include/spine/Triangulator.h
+main/spine/cpp-3.5/include/spine/VertexAttachment.h
+
+/******************************************************************************
+ * Spine Runtimes Software License v2.5
+ *
+ * Copyright (c) 2013-2016, Esoteric Software
+ * All rights reserved.
+ *
+ * You are granted a perpetual, non-exclusive, non-sublicensable, and
+ * non-transferable license to use, install, execute, and perform the Spine
+ * Runtimes software and derivative works solely for personal or internal
+ * use. Without the written permission of Esoteric Software (see Section 2 of
+ * the Spine Software License Agreement), you may not (a) modify, translate,
+ * adapt, or develop new applications using the Spine Runtimes or otherwise
+ * create derivative works or improvements of the Spine Runtimes or (b) remove,
+ * delete, alter, or obscure any trademarks or any copyright, trademark, patent,
+ * or other intellectual property or proprietary rights notices on or in the
+ * Software, including any copy thereof. Redistributions in binary or source
+ * form must include this license and terms.
+ *
+ * THIS SOFTWARE IS PROVIDED BY ESOTERIC SOFTWARE "AS IS" AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL ESOTERIC SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES, BUSINESS INTERRUPTION, OR LOSS OF
+ * USE, DATA, OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *****************************************************************************/
+
+
+Files:
+main/spine/cpp-3.6/src/spine/Atlas.cpp
+main/spine/cpp-3.6/include/spine/dll.h
+main/spine/cpp-3.5/src/spine/Atlas.cpp
+main/spine/cpp-3.5/include/spine/dll.h
+
+/******************************************************************************
+* Spine Runtimes Software License v2.5
+*
+* Copyright (c) 2013-2016, Esoteric Software
+* All rights reserved.
+*
+* You are granted a perpetual, non-exclusive, non-sublicensable, and
+* non-transferable license to use, install, execute, and perform the Spine
+* Runtimes software and derivative works solely for personal or internal
+* use. Without the written permission of Esoteric Software (see Section 2 of
+* the Spine Software License Agreement), you may not (a) modify, translate,
+* adapt, or develop new applications using the Spine Runtimes or otherwise
+* create derivative works or improvements of the Spine Runtimes or (b) remove,
+* delete, alter, or obscure any trademarks or any copyright, trademark, patent,
+* or other intellectual property or proprietary rights notices on or in the
+* Software, including any copy thereof. Redistributions in binary or source
+* form must include this license and terms.
+*
+* THIS SOFTWARE IS PROVIDED BY ESOTERIC SOFTWARE "AS IS" AND ANY EXPRESS OR
+* IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+* MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+* EVENT SHALL ESOTERIC SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+* SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+* PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES, BUSINESS INTERRUPTION, OR LOSS OF
+* USE, DATA, OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+* IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+* ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+* POSSIBILITY OF SUCH DAMAGE.
+*****************************************************************************/
+
+
+Files:
+main/spine/cpp-3.6/src/spine/kvec.h
+main/spine/cpp-3.5/src/spine/kvec.h
+main/spine/c-3.4/src/spine/kvec.h
+
+/* The MIT License
+
+   Copyright (c) 2008, by Attractive Chaos <attractor@live.co.uk>
+
+   Permission is hereby granted, free of charge, to any person obtaining
+   a copy of this software and associated documentation files (the
+   "Software"), to deal in the Software without restriction, including
+   without limitation the rights to use, copy, modify, merge, publish,
+   distribute, sublicense, and/or sell copies of the Software, and to
+   permit persons to whom the Software is furnished to do so, subject to
+   the following conditions:
+
+   The above copyright notice and this permission notice shall be
+   included in all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+   NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+   BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+   ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+   CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.
+*/
+
+
+Files:
+main/spine/c-3.4/src/spine/Animation.c
+main/spine/c-3.4/src/spine/AnimationState.c
+main/spine/c-3.4/src/spine/AnimationStateData.c
+main/spine/c-3.4/src/spine/Atlas.c
+main/spine/c-3.4/src/spine/AtlasAttachmentLoader.c
+main/spine/c-3.4/src/spine/Attachment.c
+main/spine/c-3.4/src/spine/AttachmentLoader.c
+main/spine/c-3.4/src/spine/Bone.c
+main/spine/c-3.4/src/spine/BoneData.c
+main/spine/c-3.4/src/spine/BoundingBoxAttachment.c
+main/spine/c-3.4/src/spine/Event.c
+main/spine/c-3.4/src/spine/EventData.c
+main/spine/c-3.4/src/spine/extension.c
+main/spine/c-3.4/src/spine/IkConstraint.c
+main/spine/c-3.4/src/spine/IkConstraintData.c
+main/spine/c-3.4/src/spine/MeshAttachment.c
+main/spine/c-3.4/src/spine/PathAttachment.c
+main/spine/c-3.4/src/spine/PathConstraint.c
+main/spine/c-3.4/src/spine/PathConstraintData.c
+main/spine/c-3.4/src/spine/RegionAttachment.c
+main/spine/c-3.4/src/spine/Skeleton.c
+main/spine/c-3.4/src/spine/SkeletonBinary.c
+main/spine/c-3.4/src/spine/SkeletonBounds.c
+main/spine/c-3.4/src/spine/SkeletonData.c
+main/spine/c-3.4/src/spine/SkeletonJson.c
+main/spine/c-3.4/src/spine/Skin.c
+main/spine/c-3.4/src/spine/Slot.c
+main/spine/c-3.4/src/spine/SlotData.c
+main/spine/c-3.4/src/spine/TransformConstraint.c
+main/spine/c-3.4/src/spine/TransformConstraintData.c
+main/spine/c-3.4/src/spine/VertexAttachment.c
+main/spine/c-3.4/include/spine/Animation.h
+main/spine/c-3.4/include/spine/AnimationState.h
+main/spine/c-3.4/include/spine/AnimationStateData.h
+main/spine/c-3.4/include/spine/Atlas.h
+main/spine/c-3.4/include/spine/AtlasAttachmentLoader.h
+main/spine/c-3.4/include/spine/Attachment.h
+main/spine/c-3.4/include/spine/AttachmentLoader.h
+main/spine/c-3.4/include/spine/Bone.h
+main/spine/c-3.4/include/spine/BoneData.h
+main/spine/c-3.4/include/spine/BoundingBoxAttachment.h
+main/spine/c-3.4/include/spine/Event.h
+main/spine/c-3.4/include/spine/EventData.h
+main/spine/c-3.4/include/spine/IkConstraint.h
+main/spine/c-3.4/include/spine/IkConstraintData.h
+main/spine/c-3.4/include/spine/MeshAttachment.h
+main/spine/c-3.4/include/spine/PathAttachment.h
+main/spine/c-3.4/include/spine/PathConstraint.h
+main/spine/c-3.4/include/spine/PathConstraintData.h
+main/spine/c-3.4/include/spine/RegionAttachment.h
+main/spine/c-3.4/include/spine/Skeleton.h
+main/spine/c-3.4/include/spine/SkeletonBinary.h
+main/spine/c-3.4/include/spine/SkeletonBounds.h
+main/spine/c-3.4/include/spine/SkeletonData.h
+main/spine/c-3.4/include/spine/SkeletonJson.h
+main/spine/c-3.4/include/spine/Skin.h
+main/spine/c-3.4/include/spine/Slot.h
+main/spine/c-3.4/include/spine/SlotData.h
+main/spine/c-3.4/include/spine/spine.h
+main/spine/c-3.4/include/spine/TransformConstraint.h
+main/spine/c-3.4/include/spine/TransformConstraintData.h
+main/spine/c-3.4/include/spine/VertexAttachment.h
+
+/******************************************************************************
+ * Spine Runtimes Software License v2.5
+ * 
+ * Copyright (c) 2013-2016, Esoteric Software
+ * All rights reserved.
+ * 
+ * You are granted a perpetual, non-exclusive, non-sublicensable, and
+ * non-transferable license to use, install, execute, and perform the Spine
+ * Runtimes software and derivative works solely for personal or internal
+ * use. Without the written permission of Esoteric Software (see Section 2 of
+ * the Spine Software License Agreement), you may not (a) modify, translate,
+ * adapt, or develop new applications using the Spine Runtimes or otherwise
+ * create derivative works or improvements of the Spine Runtimes or (b) remove,
+ * delete, alter, or obscure any trademarks or any copyright, trademark, patent,
+ * or other intellectual property or proprietary rights notices on or in the
+ * Software, including any copy thereof. Redistributions in binary or source
+ * form must include this license and terms.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY ESOTERIC SOFTWARE "AS IS" AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL ESOTERIC SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES, BUSINESS INTERRUPTION, OR LOSS OF
+ * USE, DATA, OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *****************************************************************************/
+
+
+Files:
+main/spine/c-3.1/src/spine/Animation.c
+main/spine/c-3.1/src/spine/AnimationState.c
+main/spine/c-3.1/src/spine/AnimationStateData.c
+main/spine/c-3.1/src/spine/Atlas.c
+main/spine/c-3.1/src/spine/AtlasAttachmentLoader.c
+main/spine/c-3.1/src/spine/Attachment.c
+main/spine/c-3.1/src/spine/AttachmentLoader.c
+main/spine/c-3.1/src/spine/Bone.c
+main/spine/c-3.1/src/spine/BoneData.c
+main/spine/c-3.1/src/spine/BoundingBoxAttachment.c
+main/spine/c-3.1/src/spine/Event.c
+main/spine/c-3.1/src/spine/EventData.c
+main/spine/c-3.1/src/spine/extension.c
+main/spine/c-3.1/src/spine/IkConstraint.c
+main/spine/c-3.1/src/spine/IkConstraintData.c
+main/spine/c-3.1/src/spine/MeshAttachment.c
+main/spine/c-3.1/src/spine/RegionAttachment.c
+main/spine/c-3.1/src/spine/Skeleton.c
+main/spine/c-3.1/src/spine/SkeletonBounds.c
+main/spine/c-3.1/src/spine/SkeletonData.c
+main/spine/c-3.1/src/spine/SkeletonJson.c
+main/spine/c-3.1/src/spine/Skin.c
+main/spine/c-3.1/src/spine/Slot.c
+main/spine/c-3.1/src/spine/SlotData.c
+main/spine/c-3.1/src/spine/TransformConstraint.c
+main/spine/c-3.1/src/spine/TransformConstraintData.c
+main/spine/c-3.1/src/spine/WeightedMeshAttachment.c
+main/spine/c-3.1/include/spine/Animation.h
+main/spine/c-3.1/include/spine/AnimationState.h
+main/spine/c-3.1/include/spine/AnimationStateData.h
+main/spine/c-3.1/include/spine/Atlas.h
+main/spine/c-3.1/include/spine/AtlasAttachmentLoader.h
+main/spine/c-3.1/include/spine/Attachment.h
+main/spine/c-3.1/include/spine/AttachmentLoader.h
+main/spine/c-3.1/include/spine/Bone.h
+main/spine/c-3.1/include/spine/BoneData.h
+main/spine/c-3.1/include/spine/BoundingBoxAttachment.h
+main/spine/c-3.1/include/spine/Event.h
+main/spine/c-3.1/include/spine/EventData.h
+main/spine/c-3.1/include/spine/IkConstraint.h
+main/spine/c-3.1/include/spine/IkConstraintData.h
+main/spine/c-3.1/include/spine/MeshAttachment.h
+main/spine/c-3.1/include/spine/RegionAttachment.h
+main/spine/c-3.1/include/spine/Skeleton.h
+main/spine/c-3.1/include/spine/SkeletonBounds.h
+main/spine/c-3.1/include/spine/SkeletonData.h
+main/spine/c-3.1/include/spine/SkeletonJson.h
+main/spine/c-3.1/include/spine/Skin.h
+main/spine/c-3.1/include/spine/Slot.h
+main/spine/c-3.1/include/spine/SlotData.h
+main/spine/c-3.1/include/spine/spine.h
+main/spine/c-3.1/include/spine/TransformConstraint.h
+main/spine/c-3.1/include/spine/TransformConstraintData.h
+main/spine/c-3.1/include/spine/WeightedMeshAttachment.h
+
+/******************************************************************************
+ * Spine Runtimes Software License
+ * Version 2.3
+ * 
+ * Copyright (c) 2013-2015, Esoteric Software
+ * All rights reserved.
+ * 
+ * You are granted a perpetual, non-exclusive, non-sublicensable and
+ * non-transferable license to use, install, execute and perform the Spine
+ * Runtimes Software (the "Software") and derivative works solely for personal
+ * or internal use. Without the written permission of Esoteric Software (see
+ * Section 2 of the Spine Software License Agreement), you may not (a) modify,
+ * translate, adapt or otherwise create derivative works, improvements of the
+ * Software or develop new applications using the Software or (b) remove,
+ * delete, alter or obscure any trademarks or any copyright, trademark, patent
+ * or other intellectual property or proprietary rights notices on or in the
+ * Software, including any copy thereof. Redistributions in binary or source
+ * form must include this license and terms.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY ESOTERIC SOFTWARE "AS IS" AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL ESOTERIC SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *****************************************************************************/
+Third-party copyright and license notices retained from the distributed source files.
+
+
+Files:
+third_party/live2d/Framework/src/Rendering/CubismClippingManager.tpp
+
+/**
+ * Copyright(c) Live2D Inc. All rights reserved.
+ *
+ * Use of this source code is governed by the Live2D Open Software license
+ * that can be found at https://www.live2d.com/eula/live2d-open-software-license-agreement_en.html.
+ */

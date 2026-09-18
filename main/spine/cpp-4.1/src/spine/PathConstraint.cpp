@@ -1,32 +1,3 @@
-/******************************************************************************
- * Spine Runtimes License Agreement
- * Last updated July 28, 2023. Replaces all prior versions.
- *
- * Copyright (c) 2013-2023, Esoteric Software LLC
- *
- * Integration of the Spine Runtimes into software or otherwise creating
- * derivative works of the Spine Runtimes is permitted under the terms and
- * conditions of Section 2 of the Spine Editor License Agreement:
- * http://esotericsoftware.com/spine-editor-license
- *
- * Otherwise, it is permitted to integrate the Spine Runtimes into software or
- * otherwise create derivative works of the Spine Runtimes (collectively,
- * "Products"), provided that each user of the Products must obtain their own
- * Spine Editor license and redistribution of the Products in any form must
- * include this license and copyright notice.
- *
- * THE SPINE RUNTIMES ARE PROVIDED BY ESOTERIC SOFTWARE LLC "AS IS" AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ESOTERIC SOFTWARE LLC BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
- * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THE
- * SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
-
 #include <spine/PathConstraint.h>
 
 #include <spine/Bone.h>
@@ -341,7 +312,6 @@ PathConstraint::computeWorldPositions(PathAttachment &path, int spacesCount, boo
 				continue;
 			}
 
-			// Determine curve containing position.
 			for (;; curve++) {
 				float length = lengths[curve];
 				if (p > length) continue;
@@ -370,7 +340,6 @@ PathConstraint::computeWorldPositions(PathAttachment &path, int spacesCount, boo
 		return out;
 	}
 
-	// World vertices.
 	if (closed) {
 		verticesLength += 2;
 		world.setSize(verticesLength, 0);
@@ -385,7 +354,6 @@ PathConstraint::computeWorldPositions(PathAttachment &path, int spacesCount, boo
 		path.computeWorldVertices(target, 2, verticesLength, world, 0);
 	}
 
-	// Curve lengths.
 	_curves.setSize(curveCount, 0);
 	pathLength = 0;
 	float x1 = world[0], y1 = world[1], cx1 = 0, cy1 = 0, cx2 = 0, cy2 = 0, x2 = 0, y2 = 0;
@@ -454,7 +422,6 @@ PathConstraint::computeWorldPositions(PathAttachment &path, int spacesCount, boo
 			continue;
 		}
 
-		// Determine curve containing position.
 		for (;; curve++) {
 			float length = _curves[curve];
 			if (p > length) continue;
@@ -467,7 +434,6 @@ PathConstraint::computeWorldPositions(PathAttachment &path, int spacesCount, boo
 			break;
 		}
 
-		// Curve segment lengths.
 		if (curve != prevCurve) {
 			prevCurve = curve;
 			int ii = curve * 6;
@@ -508,7 +474,6 @@ PathConstraint::computeWorldPositions(PathAttachment &path, int spacesCount, boo
 			segment = 0;
 		}
 
-		// Weight by segment length.
 		p *= curveLength;
 		for (;; segment++) {
 			float length = _segments[segment];

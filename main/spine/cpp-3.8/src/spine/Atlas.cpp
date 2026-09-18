@@ -1,32 +1,3 @@
-/******************************************************************************
- * Spine Runtimes License Agreement
- * Last updated January 1, 2020. Replaces all prior versions.
- *
- * Copyright (c) 2013-2020, Esoteric Software LLC
- *
- * Integration of the Spine Runtimes into software or otherwise creating
- * derivative works of the Spine Runtimes is permitted under the terms and
- * conditions of Section 2 of the Spine Editor License Agreement:
- * http://esotericsoftware.com/spine-editor-license
- *
- * Otherwise, it is permitted to integrate the Spine Runtimes into software
- * or otherwise create derivative works of the Spine Runtimes (collectively,
- * "Products"), provided that each user of the Products must obtain their own
- * Spine Editor license and redistribution of the Products in any form must
- * include this license and copyright notice.
- *
- * THE SPINE RUNTIMES ARE PROVIDED BY ESOTERIC SOFTWARE LLC "AS IS" AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ESOTERIC SOFTWARE LLC BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
- * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
-
 #ifdef SPINE_UE4
 #include "SpinePluginPrivatePCH.h"
 #endif
@@ -45,11 +16,10 @@ Atlas::Atlas(const String &path, TextureLoader *textureLoader, bool createTextur
 	int length;
 	const char *data;
 
-	/* Get directory from atlas path. */
 	const char *lastForwardSlash = strrchr(path.buffer(), '/');
 	const char *lastBackwardSlash = strrchr(path.buffer(), '\\');
 	const char *lastSlash = lastForwardSlash > lastBackwardSlash ? lastForwardSlash : lastBackwardSlash;
-	if (lastSlash == path) lastSlash++; /* Never drop starting slash. */
+	if (lastSlash == path) lastSlash++;
 	dirLength = (int) (lastSlash ? lastSlash - path.buffer() : 0);
 	dir = SpineExtension::calloc<char>(dirLength + 1, __FILE__, __LINE__);
 	memcpy(dir, path.buffer(), dirLength);
@@ -131,7 +101,6 @@ void Atlas::load(const char *begin, int length, const char *dir, bool createText
 			int tupleVal = readTuple(&begin, end, tuple);
 			assert(tupleVal == 2);
 
-			/* size is only optional for an atlas packed with an old TexturePacker. */
 			page->width = toInt(tuple);
 			page->height = toInt(tuple + 1);
 			readTuple(&begin, end, tuple);
@@ -200,7 +169,7 @@ void Atlas::load(const char *begin, int length, const char *dir, bool createText
 			assert(count);
 
 			if (count == 4) {
-				/* split is optional */
+
 				region->splits.setSize(4, 0);
 				region->splits[0] = toInt(tuple);
 				region->splits[1] = toInt(tuple + 1);
@@ -211,7 +180,7 @@ void Atlas::load(const char *begin, int length, const char *dir, bool createText
 				assert(count);
 
 				if (count == 4) {
-					/* pad is optional, but only present with splits */
+
 					region->pads.setSize(4, 0);
 					region->pads[0] = toInt(tuple);
 					region->pads[1] = toInt(tuple + 1);
@@ -257,7 +226,6 @@ int Atlas::readLine(const char **begin, const char *end, Str *str) {
 
 	str->begin = *begin;
 
-	/* Find next delimiter. */
 	while (*begin != end && **begin != '\n')
 		(*begin)++;
 

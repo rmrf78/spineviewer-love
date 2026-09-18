@@ -1,0 +1,27 @@
+#include <spine/SlotData.h>
+#include <spine/extension.h>
+
+spSlotData* spSlotData_create (const char* name, spBoneData* boneData) {
+	spSlotData* self = NEW(spSlotData);
+	MALLOC_STR(self->name, name);
+	CONST_CAST(spBoneData*, self->boneData) = boneData;
+	self->r = 1;
+	self->g = 1;
+	self->b = 1;
+	self->a = 1;
+	return self;
+}
+
+void spSlotData_dispose (spSlotData* self) {
+	FREE(self->name);
+	FREE(self->attachmentName);
+	FREE(self);
+}
+
+void spSlotData_setAttachmentName (spSlotData* self, const char* attachmentName) {
+	FREE(self->attachmentName);
+	if (attachmentName)
+		MALLOC_STR(self->attachmentName, attachmentName);
+	else
+		CONST_CAST(char*, self->attachmentName) = 0;
+}

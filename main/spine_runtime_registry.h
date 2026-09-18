@@ -3,10 +3,13 @@
 
 #include <array>
 #include <memory>
+#include <vector>
 
 #include "runtime_shared/spine_player_api.h"
 
-#include "render_d3d11/d3d11_renderer.h"
+#include "sl_scene_renderer.h"
+
+namespace sl_d3d11 { class D3D11Renderer; }
 
 class SlRuntimeHub
 {
@@ -19,8 +22,9 @@ public:
 
 	enum class RuntimeLane : uint8_t
 	{
-		Unknown = static_cast<uint8_t>(-1U),
+		Unknown = 0xFF,
 		Runtime21 = 0,
+		Runtime31,
 		Runtime34,
 		Runtime35,
 		Runtime36,
@@ -40,9 +44,11 @@ public:
 	bool LaneIsReady(RuntimeLane slot) const;
 	SlPlaybackRuntime* CurrentRuntime() const;
 	bool RenderCurrentRuntimeD3D11(sl_d3d11::D3D11Renderer& renderer);
+	bool RenderCurrentRuntime(SlSceneRenderer& renderer);
+	bool QueryLastRenderedBounds(SlRect& outBounds) const noexcept;
 
 private:
-	static constexpr size_t RuntimeLaneCount = 9;
+	static constexpr size_t RuntimeLaneCount = 10;
 	static_assert(RuntimeLaneCount == static_cast<uint8_t>(RuntimeLane::End), "Runtime lane table size is out of sync.");
 
 	std::array<std::unique_ptr<SlPlaybackRuntime>, RuntimeLaneCount> m_runtimeSlots;

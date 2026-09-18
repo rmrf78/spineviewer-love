@@ -1,33 +1,3 @@
-/******************************************************************************
- * Spine Runtimes Software License v2.5
- *
- * Copyright (c) 2013-2016, Esoteric Software
- * All rights reserved.
- *
- * You are granted a perpetual, non-exclusive, non-sublicensable, and
- * non-transferable license to use, install, execute, and perform the Spine
- * Runtimes software and derivative works solely for personal or internal
- * use. Without the written permission of Esoteric Software (see Section 2 of
- * the Spine Software License Agreement), you may not (a) modify, translate,
- * adapt, or develop new applications using the Spine Runtimes or otherwise
- * create derivative works or improvements of the Spine Runtimes or (b) remove,
- * delete, alter, or obscure any trademarks or any copyright, trademark, patent,
- * or other intellectual property or proprietary rights notices on or in the
- * Software, including any copy thereof. Redistributions in binary or source
- * form must include this license and terms.
- *
- * THIS SOFTWARE IS PROVIDED BY ESOTERIC SOFTWARE "AS IS" AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
- * EVENT SHALL ESOTERIC SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES, BUSINESS INTERRUPTION, OR LOSS OF
- * USE, DATA, OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
- * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
-
 #ifndef SPINE_ANIMATIONSTATE_H_
 #define SPINE_ANIMATIONSTATE_H_
 
@@ -57,7 +27,7 @@ struct spTrackEntry {
 	spTrackEntry* mixingFrom;
 	spAnimationStateListener listener;
 	int trackIndex;
-	int /*boolean*/ loop;
+	int   loop;
 	float eventThreshold, attachmentThreshold, drawOrderThreshold;
 	float animationStart, animationEnd, animationLast, nextAnimationLast;
 	float delay, trackTime, trackLast, nextTrackLast, trackEnd, timeScale;
@@ -115,26 +85,22 @@ struct spAnimationState {
 #endif
 };
 
-/* @param data May be 0 for no mixing. */
 spAnimationState* spAnimationState_create (spAnimationStateData* data);
 void spAnimationState_dispose (spAnimationState* self);
 
 void spAnimationState_update (spAnimationState* self, float delta);
-int /**bool**/ spAnimationState_apply (spAnimationState* self, struct spSkeleton* skeleton);
+int   spAnimationState_apply (spAnimationState* self, struct spSkeleton* skeleton);
 
 void spAnimationState_clearTracks (spAnimationState* self);
 void spAnimationState_clearTrack (spAnimationState* self, int trackIndex);
 
-/** Set the current animation. Any queued animations are cleared. */
 spTrackEntry* spAnimationState_setAnimationByName (spAnimationState* self, int trackIndex, const char* animationName,
-		int/*bool*/loop);
-spTrackEntry* spAnimationState_setAnimation (spAnimationState* self, int trackIndex, spAnimation* animation, int/*bool*/loop);
+		int loop);
+spTrackEntry* spAnimationState_setAnimation (spAnimationState* self, int trackIndex, spAnimation* animation, int loop);
 
-/** Adds an animation to be played delay seconds after the current or last queued animation, taking into account any mix
- * duration. */
 spTrackEntry* spAnimationState_addAnimationByName (spAnimationState* self, int trackIndex, const char* animationName,
-		int/*bool*/loop, float delay);
-spTrackEntry* spAnimationState_addAnimation (spAnimationState* self, int trackIndex, spAnimation* animation, int/*bool*/loop,
+		int loop, float delay);
+spTrackEntry* spAnimationState_addAnimation (spAnimationState* self, int trackIndex, spAnimation* animation, int loop,
 		float delay);
 spTrackEntry* spAnimationState_setEmptyAnimation(spAnimationState* self, int trackIndex, float mixDuration);
 spTrackEntry* spAnimationState_addEmptyAnimation(spAnimationState* self, int trackIndex, float mixDuration, float delay);
@@ -146,7 +112,6 @@ void spAnimationState_clearListenerNotifications(spAnimationState* self);
 
 float spTrackEntry_getAnimationTime (spTrackEntry* entry);
 
-/** Use this to dispose static memory before your app exits to appease your memory leak detector*/
 void spAnimationState_disposeStatics ();
 
 #ifdef SPINE_SHORT_NAMES
@@ -181,4 +146,4 @@ typedef spAnimationState AnimationState;
 }
 #endif
 
-#endif /* SPINE_ANIMATIONSTATE_H_ */
+#endif

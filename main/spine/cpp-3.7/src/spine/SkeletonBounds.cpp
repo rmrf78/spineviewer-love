@@ -1,32 +1,3 @@
-/******************************************************************************
- * Spine Runtimes License Agreement
- * Last updated May 1, 2019. Replaces all prior versions.
- *
- * Copyright (c) 2013-2019, Esoteric Software LLC
- *
- * Integration of the Spine Runtimes into software or otherwise creating
- * derivative works of the Spine Runtimes is permitted under the terms and
- * conditions of Section 2 of the Spine Editor License Agreement:
- * http://esotericsoftware.com/spine-editor-license
- *
- * Otherwise, it is permitted to integrate the Spine Runtimes into software
- * or otherwise create derivative works of the Spine Runtimes (collectively,
- * "Products"), provided that each user of the Products must obtain their own
- * Spine Editor license and redistribution of the Products in any form must
- * include this license and copyright notice.
- *
- * THIS SOFTWARE IS PROVIDED BY ESOTERIC SOFTWARE LLC "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN
- * NO EVENT SHALL ESOTERIC SOFTWARE LLC BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES, BUSINESS
- * INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
-
 #include <spine/SkeletonBounds.h>
 #include <limits.h>
 #include <spine/extension.h>
@@ -43,7 +14,7 @@ void spPolygon_dispose (spPolygon* self) {
 	FREE(self);
 }
 
-int/*bool*/spPolygon_containsPoint (spPolygon* self, float x, float y) {
+int spPolygon_containsPoint (spPolygon* self, float x, float y) {
 	int prevIndex = self->count - 2;
 	int inside = 0;
 	int i;
@@ -59,7 +30,7 @@ int/*bool*/spPolygon_containsPoint (spPolygon* self, float x, float y) {
 	return inside;
 }
 
-int/*bool*/spPolygon_intersectsSegment (spPolygon* self, float x1, float y1, float x2, float y2) {
+int spPolygon_intersectsSegment (spPolygon* self, float x1, float y1, float x2, float y2) {
 	float width12 = x1 - x2, height12 = y1 - y2;
 	float det1 = x1 * y2 - y1 * x2;
 	float x3 = self->vertices[self->count - 2], y3 = self->vertices[self->count - 1];
@@ -80,8 +51,6 @@ int/*bool*/spPolygon_intersectsSegment (spPolygon* self, float x1, float y1, flo
 	return 0;
 }
 
-/**/
-
 typedef struct {
 	spSkeletonBounds super;
 	int capacity;
@@ -100,7 +69,7 @@ void spSkeletonBounds_dispose (spSkeletonBounds* self) {
 	FREE(self);
 }
 
-void spSkeletonBounds_update (spSkeletonBounds* self, spSkeleton* skeleton, int/*bool*/updateAabb) {
+void spSkeletonBounds_update (spSkeletonBounds* self, spSkeleton* skeleton, int updateAabb) {
 	int i;
 
 	_spSkeletonBounds* internal = SUB_CAST(_spSkeletonBounds, self);
@@ -158,11 +127,11 @@ void spSkeletonBounds_update (spSkeletonBounds* self, spSkeleton* skeleton, int/
 	}
 }
 
-int/*bool*/spSkeletonBounds_aabbContainsPoint (spSkeletonBounds* self, float x, float y) {
+int spSkeletonBounds_aabbContainsPoint (spSkeletonBounds* self, float x, float y) {
 	return x >= self->minX && x <= self->maxX && y >= self->minY && y <= self->maxY;
 }
 
-int/*bool*/spSkeletonBounds_aabbIntersectsSegment (spSkeletonBounds* self, float x1, float y1, float x2, float y2) {
+int spSkeletonBounds_aabbIntersectsSegment (spSkeletonBounds* self, float x1, float y1, float x2, float y2) {
 	float m, x, y;
 	if ((x1 <= self->minX && x2 <= self->minX) || (y1 <= self->minY && y2 <= self->minY) || (x1 >= self->maxX && x2 >= self->maxX)
 			|| (y1 >= self->maxY && y2 >= self->maxY)) return 0;
@@ -178,7 +147,7 @@ int/*bool*/spSkeletonBounds_aabbIntersectsSegment (spSkeletonBounds* self, float
 	return 0;
 }
 
-int/*bool*/spSkeletonBounds_aabbIntersectsSkeleton (spSkeletonBounds* self, spSkeletonBounds* bounds) {
+int spSkeletonBounds_aabbIntersectsSkeleton (spSkeletonBounds* self, spSkeletonBounds* bounds) {
 	return self->minX < bounds->maxX && self->maxX > bounds->minX && self->minY < bounds->maxY && self->maxY > bounds->minY;
 }
 

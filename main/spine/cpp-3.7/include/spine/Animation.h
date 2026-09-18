@@ -1,32 +1,3 @@
-/******************************************************************************
- * Spine Runtimes License Agreement
- * Last updated May 1, 2019. Replaces all prior versions.
- *
- * Copyright (c) 2013-2019, Esoteric Software LLC
- *
- * Integration of the Spine Runtimes into software or otherwise creating
- * derivative works of the Spine Runtimes is permitted under the terms and
- * conditions of Section 2 of the Spine Editor License Agreement:
- * http://esotericsoftware.com/spine-editor-license
- *
- * Otherwise, it is permitted to integrate the Spine Runtimes into software
- * or otherwise create derivative works of the Spine Runtimes (collectively,
- * "Products"), provided that each user of the Products must obtain their own
- * Spine Editor license and redistribution of the Products in any form must
- * include this license and copyright notice.
- *
- * THIS SOFTWARE IS PROVIDED BY ESOTERIC SOFTWARE LLC "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN
- * NO EVENT SHALL ESOTERIC SOFTWARE LLC BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES, BUSINESS
- * INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
-
 #ifndef SPINE_ANIMATION_H_
 #define SPINE_ANIMATION_H_
 
@@ -73,9 +44,6 @@ typedef enum {
 SP_API spAnimation* spAnimation_create (const char* name, int timelinesCount);
 SP_API void spAnimation_dispose (spAnimation* self);
 
-/** Poses the skeleton at the specified time for this animation.
- * @param lastTime The last time the animation was applied.
- * @param events Any triggered events are added. May be null.*/
 SP_API void spAnimation_apply (const spAnimation* self, struct spSkeleton* skeleton, float lastTime, float time, int loop,
 		spEvent** events, int* eventsCount, float alpha, spMixBlend blend, spMixDirection direction);
 
@@ -85,8 +53,6 @@ typedef spAnimation Animation;
 #define Animation_dispose(...) spAnimation_dispose(__VA_ARGS__)
 #define Animation_apply(...) spAnimation_apply(__VA_ARGS__)
 #endif
-
-/**/
 
 typedef enum {
 	SP_TIMELINE_ROTATE,
@@ -136,11 +102,9 @@ typedef spTimeline Timeline;
 #define Timeline_apply(...) spTimeline_apply(__VA_ARGS__)
 #endif
 
-/**/
-
 typedef struct spCurveTimeline {
 	spTimeline super;
-	float* curves; /* type, x, y, ... */
+	float* curves;
 
 #ifdef __cplusplus
 	spCurveTimeline() :
@@ -153,9 +117,6 @@ typedef struct spCurveTimeline {
 SP_API void spCurveTimeline_setLinear (spCurveTimeline* self, int frameIndex);
 SP_API void spCurveTimeline_setStepped (spCurveTimeline* self, int frameIndex);
 
-/* Sets the control handle positions for an interpolation bezier curve used to transition from this keyframe to the next.
- * cx1 and cx2 are from 0 to 1, representing the percent of time between the two keyframes. cy1 and cy2 are the percent of
- * the difference between the keyframe's values. */
 SP_API void spCurveTimeline_setCurve (spCurveTimeline* self, int frameIndex, float cx1, float cy1, float cx2, float cy2);
 SP_API float spCurveTimeline_getCurvePercent (const spCurveTimeline* self, int frameIndex, float percent);
 
@@ -167,12 +128,10 @@ typedef spCurveTimeline CurveTimeline;
 #define CurveTimeline_getCurvePercent(...) spCurveTimeline_getCurvePercent(__VA_ARGS__)
 #endif
 
-/**/
-
 typedef struct spBaseTimeline {
 	spCurveTimeline super;
 	int const framesCount;
-	float* const frames; /* time, angle, ... for rotate. time, x, y, ... for translate and scale. */
+	float* const frames;
 	int boneIndex;
 
 #ifdef __cplusplus
@@ -184,8 +143,6 @@ typedef struct spBaseTimeline {
 	}
 #endif
 } spBaseTimeline;
-
-/**/
 
 static const int ROTATE_PREV_TIME = -2, ROTATE_PREV_ROTATION = -1;
 static const int ROTATE_ROTATION = 1;
@@ -203,8 +160,6 @@ typedef spRotateTimeline RotateTimeline;
 #define RotateTimeline_setFrame(...) spRotateTimeline_setFrame(__VA_ARGS__)
 #endif
 
-/**/
-
 static const int TRANSLATE_ENTRIES = 3;
 
 typedef struct spBaseTimeline spTranslateTimeline;
@@ -219,8 +174,6 @@ typedef spTranslateTimeline TranslateTimeline;
 #define TranslateTimeline_setFrame(...) spTranslateTimeline_setFrame(__VA_ARGS__)
 #endif
 
-/**/
-
 typedef struct spBaseTimeline spScaleTimeline;
 
 SP_API spScaleTimeline* spScaleTimeline_create (int framesCount);
@@ -232,8 +185,6 @@ typedef spScaleTimeline ScaleTimeline;
 #define ScaleTimeline_create(...) spScaleTimeline_create(__VA_ARGS__)
 #define ScaleTimeline_setFrame(...) spScaleTimeline_setFrame(__VA_ARGS__)
 #endif
-
-/**/
 
 typedef struct spBaseTimeline spShearTimeline;
 
@@ -247,14 +198,12 @@ typedef spShearTimeline ShearTimeline;
 #define ShearTimeline_setFrame(...) spShearTimeline_setFrame(__VA_ARGS__)
 #endif
 
-/**/
-
 static const int COLOR_ENTRIES = 5;
 
 typedef struct spColorTimeline {
 	spCurveTimeline super;
 	int const framesCount;
-	float* const frames; /* time, r, g, b, a, ... */
+	float* const frames;
 	int slotIndex;
 
 #ifdef __cplusplus
@@ -277,14 +226,12 @@ typedef spColorTimeline ColorTimeline;
 #define ColorTimeline_setFrame(...) spColorTimeline_setFrame(__VA_ARGS__)
 #endif
 
-/**/
-
 static const int TWOCOLOR_ENTRIES = 8;
 
 typedef struct spTwoColorTimeline {
 	spCurveTimeline super;
 	int const framesCount;
-	float* const frames; /* time, r, g, b, a, ... */
+	float* const frames;
 	int slotIndex;
 
 #ifdef __cplusplus
@@ -307,12 +254,10 @@ typedef spTwoColorTimeline TwoColorTimeline;
 #define TwoColorTimeline_setFrame(...) spTwoColorTimeline_setFrame(__VA_ARGS__)
 #endif
 
-/**/
-
 typedef struct spAttachmentTimeline {
 	spTimeline super;
 	int const framesCount;
-	float* const frames; /* time, ... */
+	float* const frames;
 	int slotIndex;
 	const char** const attachmentNames;
 
@@ -329,7 +274,6 @@ typedef struct spAttachmentTimeline {
 
 SP_API spAttachmentTimeline* spAttachmentTimeline_create (int framesCount);
 
-/* @param attachmentName May be 0. */
 SP_API void spAttachmentTimeline_setFrame (spAttachmentTimeline* self, int frameIndex, float time, const char* attachmentName);
 
 #ifdef SPINE_SHORT_NAMES
@@ -338,12 +282,10 @@ typedef spAttachmentTimeline AttachmentTimeline;
 #define AttachmentTimeline_setFrame(...) spAttachmentTimeline_setFrame(__VA_ARGS__)
 #endif
 
-/**/
-
 typedef struct spEventTimeline {
 	spTimeline super;
 	int const framesCount;
-	float* const frames; /* time, ... */
+	float* const frames;
 	spEvent** const events;
 
 #ifdef __cplusplus
@@ -366,12 +308,10 @@ typedef spEventTimeline EventTimeline;
 #define EventTimeline_setFrame(...) spEventTimeline_setFrame(__VA_ARGS__)
 #endif
 
-/**/
-
 typedef struct spDrawOrderTimeline {
 	spTimeline super;
 	int const framesCount;
-	float* const frames; /* time, ... */
+	float* const frames;
 	const int** const drawOrders;
 	int const slotsCount;
 
@@ -396,12 +336,10 @@ typedef spDrawOrderTimeline DrawOrderTimeline;
 #define DrawOrderTimeline_setFrame(...) spDrawOrderTimeline_setFrame(__VA_ARGS__)
 #endif
 
-/**/
-
 typedef struct spDeformTimeline {
 	spCurveTimeline super;
 	int const framesCount;
-	float* const frames; /* time, ... */
+	float* const frames;
 	int const frameVerticesCount;
 	const float** const frameVertices;
 	int slotIndex;
@@ -429,14 +367,12 @@ typedef spDeformTimeline DeformTimeline;
 #define DeformTimeline_setFrame(...) spDeformTimeline_setFrame(__VA_ARGS__)
 #endif
 
-/**/
-
 static const int IKCONSTRAINT_ENTRIES = 5;
 
 typedef struct spIkConstraintTimeline {
 	spCurveTimeline super;
 	int const framesCount;
-	float* const frames; /* time, mix, bendDirection, ... */
+	float* const frames;
 	int ikConstraintIndex;
 
 #ifdef __cplusplus
@@ -451,7 +387,7 @@ typedef struct spIkConstraintTimeline {
 
 SP_API spIkConstraintTimeline* spIkConstraintTimeline_create (int framesCount);
 
-SP_API void spIkConstraintTimeline_setFrame (spIkConstraintTimeline* self, int frameIndex, float time, float mix, int bendDirection, int /*boolean*/ compress, int /**boolean**/ stretch);
+SP_API void spIkConstraintTimeline_setFrame (spIkConstraintTimeline* self, int frameIndex, float time, float mix, int bendDirection, int   compress, int   stretch);
 
 #ifdef SPINE_SHORT_NAMES
 typedef spIkConstraintTimeline IkConstraintTimeline;
@@ -459,14 +395,12 @@ typedef spIkConstraintTimeline IkConstraintTimeline;
 #define IkConstraintTimeline_setFrame(...) spIkConstraintTimeline_setFrame(__VA_ARGS__)
 #endif
 
-/**/
-
 static const int TRANSFORMCONSTRAINT_ENTRIES = 5;
 
 typedef struct spTransformConstraintTimeline {
 	spCurveTimeline super;
 	int const framesCount;
-	float* const frames; /* time, rotate mix, translate mix, scale mix, shear mix, ... */
+	float* const frames;
 	int transformConstraintIndex;
 
 #ifdef __cplusplus
@@ -489,14 +423,12 @@ typedef spTransformConstraintTimeline TransformConstraintTimeline;
 #define TransformConstraintTimeline_setFrame(...) spTransformConstraintTimeline_setFrame(__VA_ARGS__)
 #endif
 
-/**/
-
 static const int PATHCONSTRAINTPOSITION_ENTRIES = 2;
 
 typedef struct spPathConstraintPositionTimeline {
 	spCurveTimeline super;
 	int const framesCount;
-	float* const frames; /* time, rotate mix, translate mix, scale mix, shear mix, ... */
+	float* const frames;
 	int pathConstraintIndex;
 
 #ifdef __cplusplus
@@ -519,14 +451,12 @@ typedef spPathConstraintPositionTimeline PathConstraintPositionTimeline;
 #define PathConstraintPositionTimeline_setFrame(...) spPathConstraintPositionTimeline_setFrame(__VA_ARGS__)
 #endif
 
-/**/
-
 static const int PATHCONSTRAINTSPACING_ENTRIES = 2;
 
 typedef struct spPathConstraintSpacingTimeline {
 	spCurveTimeline super;
 	int const framesCount;
-	float* const frames; /* time, rotate mix, translate mix, scale mix, shear mix, ... */
+	float* const frames;
 	int pathConstraintIndex;
 
 #ifdef __cplusplus
@@ -549,14 +479,12 @@ typedef spPathConstraintSpacingTimeline PathConstraintSpacingTimeline;
 #define PathConstraintSpacingTimeline_setFrame(...) spPathConstraintSpacingTimeline_setFrame(__VA_ARGS__)
 #endif
 
-/**/
-
 static const int PATHCONSTRAINTMIX_ENTRIES = 3;
 
 typedef struct spPathConstraintMixTimeline {
 	spCurveTimeline super;
 	int const framesCount;
-	float* const frames; /* time, rotate mix, translate mix, scale mix, shear mix, ... */
+	float* const frames;
 	int pathConstraintIndex;
 
 #ifdef __cplusplus
@@ -579,10 +507,8 @@ typedef spPathConstraintMixTimeline PathConstraintMixTimeline;
 #define PathConstraintMixTimeline_setFrame(...) spPathConstraintMixTimeline_setFrame(__VA_ARGS__)
 #endif
 
-/**/
-
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SPINE_ANIMATION_H_ */
+#endif

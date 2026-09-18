@@ -2,10 +2,16 @@
 
 #include <Windows.h>
 #include <cstdio>
+#include <cwchar>
 #include <vector>
+
+#include <wincodec.h>
+#include <wrl/client.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+
+#pragma comment(lib, "windowscodecs.lib")
 
 namespace sl_d3d11 {
 namespace {
@@ -53,7 +59,7 @@ bool ReadFileBytes(const wchar_t* path, std::vector<unsigned char>& outBytes, st
 	return true;
 }
 
-bool CreateTextureFromRgba(ID3D11Device* device, const unsigned char* pixels, int width, int height, D3D11Texture& outTexture)
+bool CreateTextureFromRgba(ID3D11Device* device, const unsigned char* pixels, int width, int height, D3D11Texture& outTexture, bool generateMips = false)
 {
 	if (device == nullptr || pixels == nullptr || width <= 0 || height <= 0)
 		return false;
@@ -61,29 +67,52 @@ bool CreateTextureFromRgba(ID3D11Device* device, const unsigned char* pixels, in
 	D3D11_TEXTURE2D_DESC desc{};
 	desc.Width = static_cast<UINT>(width);
 	desc.Height = static_cast<UINT>(height);
-	desc.MipLevels = 1;
+	desc.MipLevels = generateMips ? 0 : 1;
 	desc.ArraySize = 1;
 	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.SampleDesc.Count = 1;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	if (generateMips)
+	{
 
-	D3D11_SUBRESOURCE_DATA data{};
-	data.pSysMem = pixels;
-	data.SysMemPitch = static_cast<UINT>(width * 4);
+		desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+		desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+	}
 
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
-	HRESULT hr = device->CreateTexture2D(&desc, &data, texture.GetAddressOf());
+	HRESULT hr = S_OK;
+	if (generateMips)
+	{
+		hr = device->CreateTexture2D(&desc, nullptr, texture.GetAddressOf());
+	}
+	else
+	{
+		D3D11_SUBRESOURCE_DATA data{};
+		data.pSysMem = pixels;
+		data.SysMemPitch = static_cast<UINT>(width * 4);
+		hr = device->CreateTexture2D(&desc, &data, texture.GetAddressOf());
+	}
 	if (FAILED(hr))
 		return false;
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{};
 	srvDesc.Format = desc.Format;
 	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MipLevels = 1;
+	srvDesc.Texture2D.MipLevels = generateMips ? static_cast<UINT>(-1) : 1;
 	hr = device->CreateShaderResourceView(texture.Get(), &srvDesc, outTexture.srv.ReleaseAndGetAddressOf());
 	if (FAILED(hr))
 		return false;
+
+	if (generateMips)
+	{
+		Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
+		device->GetImmediateContext(context.GetAddressOf());
+		if (!context)
+			return false;
+		context->UpdateSubresource(texture.Get(), 0, nullptr, pixels, static_cast<UINT>(width * 4), 0);
+		context->GenerateMips(outTexture.srv.Get());
+	}
 
 	outTexture.texture = texture;
 	outTexture.width = width;
@@ -91,9 +120,111 @@ bool CreateTextureFromRgba(ID3D11Device* device, const unsigned char* pixels, in
 	return true;
 }
 
+unsigned char* LoadPixelsViaWic(const wchar_t* path, int& outWidth, int& outHeight)
+{
+	using Microsoft::WRL::ComPtr;
+
+	ComPtr<IWICImagingFactory> factory;
+	HRESULT hr = ::CoCreateInstance(
+		CLSID_WICImagingFactory,
+		nullptr,
+		CLSCTX_INPROC_SERVER,
+		IID_PPV_ARGS(factory.GetAddressOf()));
+	if (FAILED(hr))
+		return nullptr;
+
+	ComPtr<IWICBitmapDecoder> decoder;
+	hr = factory->CreateDecoderFromFilename(
+		path,
+		nullptr,
+		GENERIC_READ,
+		WICDecodeMetadataCacheOnLoad,
+		decoder.GetAddressOf());
+	if (FAILED(hr))
+		return nullptr;
+
+	ComPtr<IWICBitmapFrameDecode> frame;
+	hr = decoder->GetFrame(0, frame.GetAddressOf());
+	if (FAILED(hr))
+		return nullptr;
+
+	ComPtr<IWICFormatConverter> converter;
+	hr = factory->CreateFormatConverter(converter.GetAddressOf());
+	if (FAILED(hr))
+		return nullptr;
+
+	hr = converter->Initialize(
+		frame.Get(),
+		GUID_WICPixelFormat32bppRGBA,
+		WICBitmapDitherTypeNone,
+		nullptr,
+		0.0,
+		WICBitmapPaletteTypeCustom);
+	if (FAILED(hr))
+		return nullptr;
+
+	UINT width = 0;
+	UINT height = 0;
+	hr = converter->GetSize(&width, &height);
+	if (FAILED(hr) || width == 0 || height == 0)
+		return nullptr;
+
+	const UINT stride = width * 4;
+	const UINT byteCount = stride * height;
+	unsigned char* pixels = new unsigned char[byteCount];
+	hr = converter->CopyPixels(nullptr, stride, byteCount, pixels);
+	if (FAILED(hr))
+	{
+		delete[] pixels;
+		return nullptr;
+	}
+
+	outWidth = static_cast<int>(width);
+	outHeight = static_cast<int>(height);
+	return pixels;
 }
 
-bool LoadTextureFromFile(ID3D11Device* device, const wchar_t* path, D3D11Texture& outTexture, bool premultiplyAlpha, std::string* outError)
+bool TryApplyUnitySplitAlpha(const wchar_t* path, unsigned char* pixels, int width, int height)
+{
+	if (path == nullptr || pixels == nullptr || width <= 0 || height <= 0)
+		return false;
+
+	std::wstring source(path);
+	const size_t extension = source.find_last_of(L'.');
+	if (extension == std::wstring::npos)
+		return false;
+	const std::wstring stem = source.substr(0, extension);
+	if (stem.size() >= 6 && _wcsicmp(stem.c_str() + stem.size() - 6, L"_alpha") == 0)
+		return false;
+
+	const std::wstring alphaPath = stem + L"_alpha" + source.substr(extension);
+	if (::GetFileAttributesW(alphaPath.c_str()) == INVALID_FILE_ATTRIBUTES)
+		return false;
+
+	std::vector<unsigned char> alphaBytes;
+	if (!ReadFileBytes(alphaPath.c_str(), alphaBytes, nullptr))
+		return false;
+	int alphaWidth = 0;
+	int alphaHeight = 0;
+	int alphaChannels = 0;
+	unsigned char* alphaPixels = stbi_load_from_memory(alphaBytes.data(),
+		static_cast<int>(alphaBytes.size()), &alphaWidth, &alphaHeight, &alphaChannels, STBI_rgb_alpha);
+	if (alphaPixels == nullptr || alphaWidth != width || alphaHeight != height)
+	{
+		if (alphaPixels != nullptr) stbi_image_free(alphaPixels);
+		return false;
+	}
+
+	const int pixelCount = width * height;
+	for (int i = 0; i < pixelCount; ++i)
+		pixels[i * 4 + 3] = alphaPixels[i * 4];
+	stbi_image_free(alphaPixels);
+	return true;
+}
+
+}
+
+bool LoadTextureFromFile(ID3D11Device* device, const wchar_t* path, D3D11Texture& outTexture, bool premultiplyAlpha, std::string* outError, bool generateMips)
 {
 	std::vector<unsigned char> fileBytes;
 	if (!ReadFileBytes(path, fileBytes, outError))
@@ -103,11 +234,18 @@ bool LoadTextureFromFile(ID3D11Device* device, const wchar_t* path, D3D11Texture
 	int height = 0;
 	int channels = 0;
 	unsigned char* pixels = stbi_load_from_memory(fileBytes.data(), static_cast<int>(fileBytes.size()), &width, &height, &channels, STBI_rgb_alpha);
-	if (pixels == nullptr)
+	const bool usingStb = pixels != nullptr;
+	if (!usingStb)
 	{
-		if (outError) *outError = stbi_failure_reason() ? stbi_failure_reason() : "stb_image failed";
-		return false;
+		pixels = LoadPixelsViaWic(path, width, height);
+		if (pixels == nullptr)
+		{
+			if (outError) *outError = stbi_failure_reason() ? stbi_failure_reason() : "texture decode failed";
+			return false;
+		}
 	}
+
+	TryApplyUnitySplitAlpha(path, pixels, width, height);
 
 	if (premultiplyAlpha)
 	{
@@ -122,8 +260,11 @@ bool LoadTextureFromFile(ID3D11Device* device, const wchar_t* path, D3D11Texture
 		}
 	}
 
-	const bool ok = CreateTextureFromRgba(device, pixels, width, height, outTexture);
-	stbi_image_free(pixels);
+	const bool ok = CreateTextureFromRgba(device, pixels, width, height, outTexture, generateMips);
+	if (usingStb)
+		stbi_image_free(pixels);
+	else
+		delete[] pixels;
 	if (!ok && outError)
 		*outError = "CreateTexture2D failed";
 	return ok;

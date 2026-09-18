@@ -1,32 +1,3 @@
-/******************************************************************************
- * Spine Runtimes License Agreement
- * Last updated January 1, 2020. Replaces all prior versions.
- *
- * Copyright (c) 2013-2020, Esoteric Software LLC
- *
- * Integration of the Spine Runtimes into software or otherwise creating
- * derivative works of the Spine Runtimes is permitted under the terms and
- * conditions of Section 2 of the Spine Editor License Agreement:
- * http://esotericsoftware.com/spine-editor-license
- *
- * Otherwise, it is permitted to integrate the Spine Runtimes into software
- * or otherwise create derivative works of the Spine Runtimes (collectively,
- * "Products"), provided that each user of the Products must obtain their own
- * Spine Editor license and redistribution of the Products in any form must
- * include this license and copyright notice.
- *
- * THE SPINE RUNTIMES ARE PROVIDED BY ESOTERIC SOFTWARE LLC "AS IS" AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ESOTERIC SOFTWARE LLC BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
- * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
-
 #ifdef SPINE_UE4
 #include "SpinePluginPrivatePCH.h"
 #endif
@@ -205,7 +176,6 @@ bool SkeletonClipping::clip(float x1, float y1, float x2, float y2, float x3, fl
 	Vector<float> *originalOutput = output;
 	bool clipped = false;
 
-	// Avoid copy at the end.
 	Vector<float> *input;
 	if (clippingArea->size() % 4 >= 2) {
 		input = output;
@@ -239,12 +209,12 @@ bool SkeletonClipping::clip(float x1, float y1, float x2, float y2, float x3, fl
 			bool side2 = deltaX * (inputY2 - edgeY2) - deltaY * (inputX2 - edgeX2) > 0;
 			if (deltaX * (inputY - edgeY2) - deltaY * (inputX - edgeX2) > 0) {
 				if (side2) {
-					// v1 inside, v2 inside
+
 					output->add(inputX2);
 					output->add(inputY2);
 					continue;
 				}
-				// v1 inside, v2 outside
+
 				float c0 = inputY2 - inputY, c2 = inputX2 - inputX;
 				float s = c0 * (edgeX2 - edgeX) - c2 * (edgeY2 - edgeY);
 				if (MathUtil::abs(s) > 0.000001f) {
@@ -256,7 +226,7 @@ bool SkeletonClipping::clip(float x1, float y1, float x2, float y2, float x3, fl
 					output->add(edgeY);
 				}
 			} else if (side2) {
-				// v1 outside, v2 inside
+
 				float c0 = inputY2 - inputY, c2 = inputX2 - inputX;
 				float s = c0 * (edgeX2 - edgeX) - c2 * (edgeY2 - edgeY);
 				if (MathUtil::abs(s) > 0.000001f) {
@@ -274,7 +244,7 @@ bool SkeletonClipping::clip(float x1, float y1, float x2, float y2, float x3, fl
 		}
 
 		if (outputStart == output->size()) {
-			// All edges outside.
+
 			originalOutput->clear();
 			return true;
 		}

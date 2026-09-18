@@ -1,33 +1,3 @@
-/******************************************************************************
- * Spine Runtimes Software License v2.5
- *
- * Copyright (c) 2013-2016, Esoteric Software
- * All rights reserved.
- *
- * You are granted a perpetual, non-exclusive, non-sublicensable, and
- * non-transferable license to use, install, execute, and perform the Spine
- * Runtimes software and derivative works solely for personal or internal
- * use. Without the written permission of Esoteric Software (see Section 2 of
- * the Spine Software License Agreement), you may not (a) modify, translate,
- * adapt, or develop new applications using the Spine Runtimes or otherwise
- * create derivative works or improvements of the Spine Runtimes or (b) remove,
- * delete, alter, or obscure any trademarks or any copyright, trademark, patent,
- * or other intellectual property or proprietary rights notices on or in the
- * Software, including any copy thereof. Redistributions in binary or source
- * form must include this license and terms.
- *
- * THIS SOFTWARE IS PROVIDED BY ESOTERIC SOFTWARE "AS IS" AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
- * EVENT SHALL ESOTERIC SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES, BUSINESS INTERRUPTION, OR LOSS OF
- * USE, DATA, OR PROFITS) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
- * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
-
 #include <spine/PathConstraint.h>
 #include <spine/Skeleton.h>
 #include <spine/extension.h>
@@ -78,9 +48,9 @@ void spPathConstraint_apply (spPathConstraint* self) {
 	float* spaces, *lengths, *positions;
 	float spacing;
 	float boneX, boneY, offsetRotation;
-	int/*bool*/tip;
+	int tip;
 	float rotateMix = self->rotateMix, translateMix = self->translateMix;
-	int/*bool*/ translate = translateMix > 0, rotate = rotateMix > 0;
+	int  translate = translateMix > 0, rotate = rotateMix > 0;
 	spPathAttachment* attachment = (spPathAttachment*)self->target->attachment;
 	spPathConstraintData* data = self->data;
 	spSpacingMode spacingMode = data->spacingMode;
@@ -198,14 +168,13 @@ static void _addAfterPosition (float p, float* temp, int i, float* out, int o) {
 	out[o + 2] = r;
 }
 
-/* Need to pass 0 as an argument, so VC++ doesn't error with C2124 */
 static int _isNan(float value, float zero) {
 	float _nan =  (float)0.0 / zero;
 	return 0 == memcmp((void*)&value, (void*)&_nan, sizeof(value));
 }
 
 static void _addCurvePosition (float p, float x1, float y1, float cx1, float cy1, float cx2, float cy2, float x2, float y2,
-		float* out, int o, int/*bool*/tangents) {
+		float* out, int o, int tangents) {
 	float tt, ttt, u, uu, uuu;
 	float ut, ut3, uut3, utt3;
 	float x, y;
@@ -218,8 +187,8 @@ static void _addCurvePosition (float p, float x1, float y1, float cx1, float cy1
 	if (tangents) out[o + 2] = ATAN2(y - (y1 * uu + cy1 * ut * 2 + cy2 * tt), x - (x1 * uu + cx1 * ut * 2 + cx2 * tt));
 }
 
-float* spPathConstraint_computeWorldPositions(spPathConstraint* self, spPathAttachment* path, int spacesCount, int/*bool*/ tangents, int/*bool*/percentPosition, int/**/percentSpacing) {
-	int i, o, w, curve, segment, /*bool*/closed, verticesLength, curveCount, prevCurve;
+float* spPathConstraint_computeWorldPositions(spPathConstraint* self, spPathAttachment* path, int spacesCount, int  tangents, int percentPosition, int percentSpacing) {
+	int i, o, w, curve, segment,  closed, verticesLength, curveCount, prevCurve;
 	float* out, *curves, *segments;
 	float tmpx, tmpy, dddfx, dddfy, ddfx, ddfy, dfx, dfy, pathLength, curveLength, p;
 	float x1, y1, cx1, cy1, cx2, cy2, x2, y2;
@@ -275,7 +244,6 @@ float* spPathConstraint_computeWorldPositions(spPathConstraint* self, spPathAtta
 				continue;
 			}
 
-			/* Determine curve containing position. */
 			for (;; curve++) {
 				float length = lengths[curve];
 				if (p > length) continue;
@@ -301,7 +269,6 @@ float* spPathConstraint_computeWorldPositions(spPathConstraint* self, spPathAtta
 		return out;
 	}
 
-	/* World vertices. */
 	if (closed) {
 		verticesLength += 2;
 		if (self->worldCount != verticesLength) {
@@ -326,7 +293,6 @@ float* spPathConstraint_computeWorldPositions(spPathConstraint* self, spPathAtta
 		spVertexAttachment_computeWorldVertices(SUPER(path), target, 2, verticesLength, world, 0, 2);
 	}
 
-	/* Curve lengths. */
 	if (self->curvesCount != curveCount) {
 		if (self->curves) FREE(self->curves);
 		self->curves = MALLOC(float, curveCount);
@@ -391,7 +357,6 @@ float* spPathConstraint_computeWorldPositions(spPathConstraint* self, spPathAtta
 			continue;
 		}
 
-		/* Determine curve containing position. */
 		for (;; curve++) {
 			float length = curves[curve];
 			if (p > length) continue;
@@ -404,7 +369,6 @@ float* spPathConstraint_computeWorldPositions(spPathConstraint* self, spPathAtta
 			break;
 		}
 
-		/* Curve segment lengths. */
 		if (curve != prevCurve) {
 			int ii;
 			prevCurve = curve;
@@ -446,7 +410,6 @@ float* spPathConstraint_computeWorldPositions(spPathConstraint* self, spPathAtta
 			segment = 0;
 		}
 
-		/* Weight by segment length. */
 		p *= curveLength;
 		for (;; segment++) {
 			float length = segments[segment];

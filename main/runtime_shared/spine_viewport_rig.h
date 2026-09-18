@@ -30,6 +30,8 @@ public:
 	virtual void SetSkeletonScale(float scale) = 0;
 	virtual float SkeletonScaleAt(size_t index) const noexcept = 0;
 	virtual bool SetSkeletonScaleAt(size_t index, float scale) noexcept = 0;
+	virtual bool SetSkeletonTransformAt(size_t index, float scaleX, float scaleY,
+		float rotationDegrees) noexcept = 0;
 
 	virtual float CanvasScale() const noexcept = 0;
 	virtual void SetCanvasScale(float scale) = 0;

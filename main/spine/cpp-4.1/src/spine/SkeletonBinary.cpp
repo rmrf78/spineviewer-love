@@ -1,32 +1,3 @@
-/******************************************************************************
- * Spine Runtimes License Agreement
- * Last updated July 28, 2023. Replaces all prior versions.
- *
- * Copyright (c) 2013-2023, Esoteric Software LLC
- *
- * Integration of the Spine Runtimes into software or otherwise creating
- * derivative works of the Spine Runtimes is permitted under the terms and
- * conditions of Section 2 of the Spine Editor License Agreement:
- * http://esotericsoftware.com/spine-editor-license
- *
- * Otherwise, it is permitted to integrate the Spine Runtimes into software or
- * otherwise create derivative works of the Spine Runtimes (collectively,
- * "Products"), provided that each user of the Products must obtain their own
- * Spine Editor license and redistribution of the Products in any form must
- * include this license and copyright notice.
- *
- * THE SPINE RUNTIMES ARE PROVIDED BY ESOTERIC SOFTWARE LLC "AS IS" AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ESOTERIC SOFTWARE LLC BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
- * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THE
- * SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *****************************************************************************/
-
 #include <spine/SkeletonBinary.h>
 
 #include <spine/Animation.h>
@@ -142,7 +113,6 @@ SkeletonData *SkeletonBinary::readSkeletonData(const unsigned char *binary, cons
 	for (int i = 0; i < numStrings; i++)
 		skeletonData->_strings.add(readString(input));
 
-	/* Bones. */
 	int numBones = readVarint(input, true);
 	skeletonData->_bones.setSize(numBones, 0);
 	for (int i = 0; i < numBones; ++i) {
@@ -165,7 +135,6 @@ SkeletonData *SkeletonBinary::readSkeletonData(const unsigned char *binary, cons
 		skeletonData->_bones[i] = data;
 	}
 
-	/* Slots. */
 	int slotsCount = readVarint(input, true);
 	skeletonData->_slots.setSize(slotsCount, 0);
 	for (int i = 0; i < slotsCount; ++i) {
@@ -187,7 +156,6 @@ SkeletonData *SkeletonBinary::readSkeletonData(const unsigned char *binary, cons
 		skeletonData->_slots[i] = slotData;
 	}
 
-	/* IK constraints. */
 	int ikConstraintsCount = readVarint(input, true);
 	skeletonData->_ikConstraints.setSize(ikConstraintsCount, 0);
 	for (int i = 0; i < ikConstraintsCount; ++i) {
@@ -209,7 +177,6 @@ SkeletonData *SkeletonBinary::readSkeletonData(const unsigned char *binary, cons
 		skeletonData->_ikConstraints[i] = data;
 	}
 
-	/* Transform constraints. */
 	int transformConstraintsCount = readVarint(input, true);
 	skeletonData->_transformConstraints.setSize(transformConstraintsCount, 0);
 	for (int i = 0; i < transformConstraintsCount; ++i) {
@@ -239,7 +206,6 @@ SkeletonData *SkeletonBinary::readSkeletonData(const unsigned char *binary, cons
 		skeletonData->_transformConstraints[i] = data;
 	}
 
-	/* Path constraints */
 	int pathConstraintsCount = readVarint(input, true);
 	skeletonData->_pathConstraints.setSize(pathConstraintsCount, 0);
 	for (int i = 0; i < pathConstraintsCount; ++i) {
@@ -267,7 +233,6 @@ SkeletonData *SkeletonBinary::readSkeletonData(const unsigned char *binary, cons
 		skeletonData->_pathConstraints[i] = data;
 	}
 
-	/* Default skin. */
 	Skin *defaultSkin = readSkin(input, true, skeletonData, nonessential);
 	if (defaultSkin) {
 		skeletonData->_defaultSkin = defaultSkin;
@@ -280,7 +245,6 @@ SkeletonData *SkeletonBinary::readSkeletonData(const unsigned char *binary, cons
 		return NULL;
 	}
 
-	/* Skins. */
 	for (size_t i = 0, n = (size_t) readVarint(input, true); i < n; ++i) {
 		Skin *skin = readSkin(input, false, skeletonData, nonessential);
 		if (skin)
@@ -292,7 +256,6 @@ SkeletonData *SkeletonBinary::readSkeletonData(const unsigned char *binary, cons
 		}
 	}
 
-	/* Linked meshes. */
 	for (int i = 0, n = (int) _linkedMeshes.size(); i < n; ++i) {
 		LinkedMesh *linkedMesh = _linkedMeshes[i];
 		Skin *skin = linkedMesh->_skin.length() == 0 ? skeletonData->getDefaultSkin() : skeletonData->findSkin(linkedMesh->_skin);
@@ -318,7 +281,6 @@ SkeletonData *SkeletonBinary::readSkeletonData(const unsigned char *binary, cons
 	ContainerUtil::cleanUpVectorOfPointers(_linkedMeshes);
 	_linkedMeshes.clear();
 
-	/* Events. */
 	int eventsCount = readVarint(input, true);
 	skeletonData->_events.setSize(eventsCount, 0);
 	for (int i = 0; i < eventsCount; ++i) {
@@ -335,7 +297,6 @@ SkeletonData *SkeletonBinary::readSkeletonData(const unsigned char *binary, cons
 		skeletonData->_events[i] = eventData;
 	}
 
-	/* Animations. */
 	int animationsCount = readVarint(input, true);
 	skeletonData->_animations.setSize(animationsCount, 0);
 	for (int i = 0; i < animationsCount; ++i) {
@@ -819,7 +780,7 @@ Animation *SkeletonBinary::readAnimation(const String &name, DataInput *input, S
 	float scale = _scale;
 	int numTimelines = readVarint(input, true);
 	SP_UNUSED(numTimelines);
-	// Slot timelines.
+
 	for (int i = 0, n = readVarint(input, true); i < n; ++i) {
 		int slotIndex = readVarint(input, true);
 		for (int ii = 0, nn = readVarint(input, true); ii < nn; ++ii) {
@@ -1039,7 +1000,6 @@ Animation *SkeletonBinary::readAnimation(const String &name, DataInput *input, S
 		}
 	}
 
-	// Bone timelines.
 	for (int i = 0, n = readVarint(input, true); i < n; ++i) {
 		int boneIndex = readVarint(input, true);
 		for (int ii = 0, nn = readVarint(input, true); ii < nn; ++ii) {
@@ -1102,7 +1062,6 @@ Animation *SkeletonBinary::readAnimation(const String &name, DataInput *input, S
 		}
 	}
 
-	// IK timelines.
 	for (int i = 0, n = readVarint(input, true); i < n; ++i) {
 		int index = readVarint(input, true);
 		int frameCount = readVarint(input, true);
@@ -1136,7 +1095,6 @@ Animation *SkeletonBinary::readAnimation(const String &name, DataInput *input, S
 		timelines.add(timeline);
 	}
 
-	// Transform constraint timelines.
 	for (int i = 0, n = readVarint(input, true); i < n; ++i) {
 		int index = readVarint(input, true);
 		int frameCount = readVarint(input, true);
@@ -1183,7 +1141,6 @@ Animation *SkeletonBinary::readAnimation(const String &name, DataInput *input, S
 		timelines.add(timeline);
 	}
 
-	// Path constraint timelines.
 	for (int i = 0, n = readVarint(input, true); i < n; ++i) {
 		int index = readVarint(input, true);
 		PathConstraintData *data = skeletonData->_pathConstraints[index];
@@ -1242,7 +1199,6 @@ Animation *SkeletonBinary::readAnimation(const String &name, DataInput *input, S
 		}
 	}
 
-	// Deform timelines.
 	for (int i = 0, n = readVarint(input, true); i < n; ++i) {
 		Skin *skin = skeletonData->_skins[readVarint(input, true)];
 		for (int ii = 0, nn = readVarint(input, true); ii < nn; ++ii) {
@@ -1332,7 +1288,6 @@ Animation *SkeletonBinary::readAnimation(const String &name, DataInput *input, S
 		}
 	}
 
-	// Draw order timeline.
 	size_t drawOrderCount = (size_t) readVarint(input, true);
 	if (drawOrderCount > 0) {
 		DrawOrderTimeline *timeline = new (__FILE__, __LINE__) DrawOrderTimeline(drawOrderCount);
@@ -1352,20 +1307,18 @@ Animation *SkeletonBinary::readAnimation(const String &name, DataInput *input, S
 			size_t originalIndex = 0, unchangedIndex = 0;
 			for (size_t ii = 0; ii < offsetCount; ++ii) {
 				size_t slotIndex = (size_t) readVarint(input, true);
-				// Collect unchanged items.
+
 				while (originalIndex != slotIndex)
 					unchanged[unchangedIndex++] = (int) originalIndex++;
-				// Set changed items.
+
 				size_t index = originalIndex;
 				drawOrder[index + (size_t) readVarint(input, true)] = (int) originalIndex++;
 			}
 
-			// Collect remaining unchanged items.
 			while (originalIndex < slotCount) {
 				unchanged[unchangedIndex++] = (int) originalIndex++;
 			}
 
-			// Fill in unchanged items.
 			for (int ii = (int) slotCount - 1; ii >= 0; --ii)
 				if (drawOrder[ii] == -1) drawOrder[ii] = unchanged[--unchangedIndex];
 			timeline->setFrame(i, time, drawOrder);
@@ -1373,7 +1326,6 @@ Animation *SkeletonBinary::readAnimation(const String &name, DataInput *input, S
 		timelines.add(timeline);
 	}
 
-	// Event timeline.
 	int eventCount = readVarint(input, true);
 	if (eventCount > 0) {
 		EventTimeline *timeline = new (__FILE__, __LINE__) EventTimeline(eventCount);
