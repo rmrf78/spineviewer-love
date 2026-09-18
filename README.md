@@ -1,3 +1,7 @@
+
+
+https://github.com/user-attachments/assets/7c6c0049-20da-480b-9408-3e7af1bab5ae
+
 # SpineLoveEX
 
 **Windows Spine live2D 查看器 —— 用于预览，导出，快速切换查看**
