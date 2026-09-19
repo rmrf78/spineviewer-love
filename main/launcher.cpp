@@ -32,7 +32,7 @@ int WINAPI wWinMain(HINSTANCE,HINSTANCE,PWSTR,int)
     const size_t slash=module.find_last_of(L"\\/");
     if(slash==std::wstring::npos)return 1;
     const std::wstring root=module.substr(0,slash);
-    const std::wstring working=root+L"\\_internal\\bin";
+    const std::wstring working=root+L"\\main";
     const std::wstring executable=working+L"\\spinelove_qt.exe";
     if(GetFileAttributesW(executable.c_str())==INVALID_FILE_ATTRIBUTES){
         MessageBoxW(nullptr,L"程序运行文件不完整，请重新解压完整安装包。",L"SpineLoveEX",MB_OK|MB_ICONERROR);

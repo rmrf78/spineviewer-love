@@ -11,15 +11,14 @@ $app=Join-Path $BuildDir 'main/qt/spinelove_qt.exe'
 $launcher=Join-Path $BuildDir 'SpineLoveEX.exe'
 if(!(Test-Path -LiteralPath $app)){throw 'Build the application first.'}
 if(!(Test-Path -LiteralPath $launcher)){throw 'Build the launcher first.'}
-if((Test-Path -LiteralPath $Destination) -and (Get-ChildItem -LiteralPath $Destination -Force | Select-Object -First 1)){throw 'Use a new empty packaging directory.'}
+if(Test-Path -LiteralPath (Join-Path $Destination '_internal')){throw 'Use the main directory layout or a new empty packaging directory.'}
 New-Item -ItemType Directory -Force -Path $Destination | Out-Null
-$internal=Join-Path $Destination '_internal'
-$bin=Join-Path $internal 'bin'
-$assets=Join-Path $internal 'assets'
-$licenses=Join-Path $internal 'licenses'
+$bin=Join-Path $Destination 'main'
+$assets=Join-Path $bin 'ttf'
+$licenses=Join-Path $bin 'licenses'
 New-Item -ItemType Directory -Force -Path $bin,$assets,$licenses | Out-Null
-Copy-Item -LiteralPath $launcher -Destination (Join-Path $Destination 'SpineLoveEX.exe')
-Copy-Item -LiteralPath $app -Destination $bin
+Copy-Item -LiteralPath $launcher -Destination (Join-Path $Destination 'SpineLoveEX.exe') -Force
+Copy-Item -LiteralPath $app -Destination $bin -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'main/NotoSansSC-Regular.ttf') -Destination $assets
 $shaderDir=Join-Path $assets 'render_d3d11/shaders'
 New-Item -ItemType Directory -Force -Path $shaderDir | Out-Null
@@ -35,10 +34,9 @@ $crtPath=Get-ChildItem -LiteralPath (Join-Path $vsRoot 'VC/Redist/MSVC') -Direct
 if(!$crtPath){throw 'The MSVC x64 runtime was not found.'}
 Get-ChildItem -LiteralPath $crtPath -File -Filter '*.dll' | Copy-Item -Destination $bin
 Copy-Item -LiteralPath (Join-Path $projectRoot 'LICENSE') -Destination $licenses
-Copy-Item -LiteralPath (Join-Path $projectRoot 'LICENSES') -Destination $licenses -Recurse
+Get-ChildItem -LiteralPath (Join-Path $projectRoot 'docs/licenses') -File | Copy-Item -Destination $licenses -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'README.md') -Destination $licenses
 Copy-Item -LiteralPath (Join-Path $projectRoot 'README_en.md') -Destination $licenses
 $archive=$Destination+'.zip'
-if(Test-Path -LiteralPath $archive){throw 'The archive already exists.'}
-Compress-Archive -LiteralPath $Destination -DestinationPath $archive
+Compress-Archive -LiteralPath $Destination -DestinationPath $archive -Force
 Write-Output $archive

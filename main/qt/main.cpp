@@ -27,7 +27,7 @@
 
 static QString assetPath(const QString& relative){
     const QDir app(QCoreApplication::applicationDirPath());
-    const QString packaged=QDir::cleanPath(app.filePath("../assets/"+relative));
+    const QString packaged=app.filePath("ttf/"+relative);
     if(QFileInfo::exists(packaged))return packaged;
     return app.filePath(relative);
 }

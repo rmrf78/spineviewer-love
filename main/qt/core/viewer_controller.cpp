@@ -25,7 +25,7 @@ QString modelName(const QString& path){auto name=QFileInfo(path).fileName();if(n
 QVariantList indexes(const QSet<int>& s){auto list=s.values();std::sort(list.begin(),list.end());QVariantList v;for(int i:list)v.append(i);return v;}
 std::string utf8(const QString& s){const auto b=s.toUtf8();return std::string(b.constData(),size_t(b.size()));}
 float zoom(float scale,int steps,bool up,float low,float high){float f=std::pow(1.05f,float(std::abs(steps)));return std::clamp(up?scale*f:scale/f,low,high);}
-QString assetPath(const QString& relative){const QDir app(QCoreApplication::applicationDirPath());const QString packaged=QDir::cleanPath(app.filePath("../assets/"+relative));return QFileInfo::exists(packaged)?packaged:app.filePath(relative);}
+QString assetPath(const QString& relative){const QDir app(QCoreApplication::applicationDirPath());const QString packaged=app.filePath("ttf/"+relative);return QFileInfo::exists(packaged)?packaged:app.filePath(relative);}
 }
 ViewerController::ViewerController(QObject* parent):QObject(parent),m_settings(QSettings::defaultFormat(),QSettings::UserScope,"SpineLoveEX","Viewer") {
     m_hub.RebuildRuntimePool();
