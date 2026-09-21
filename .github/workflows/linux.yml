@@ -73,8 +73,8 @@ jobs:
         env:
           QT_QPA_PLATFORM: offscreen
         run: |
-          timeout 5 ./build/main/qt/spinelove_qt --viewport 640x360 --fixed-size
-          code=$?
+          code=0
+          timeout 5 ./build/main/qt/spinelove_qt --viewport 640x360 --fixed-size || code=$?
           if [ "$code" -ne 0 ] && [ "$code" -ne 124 ]; then
             echo "smoke test failed with exit code $code"
             exit "$code"
