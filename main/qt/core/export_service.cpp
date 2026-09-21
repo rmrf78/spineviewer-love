@@ -179,7 +179,7 @@ QList<QStringList> ExportService::movieArguments(const QString& frameFolder, con
     if (format == MovieFormat::Mp4) {
         const QStringList prefix = base + QStringList{"-vf", "crop=trunc(iw/2)*2:trunc(ih/2)*2"};
         const QStringList tail{"-pix_fmt", "yuv420p", "-movflags", "+faststart", outputPath};
-        QStringList encoders{prefix + QStringList{"-c:v", "libx264", "-crf", "17"} + tail};
+        QList<QStringList> encoders{prefix + QStringList{"-c:v", "libx264", "-crf", "17"} + tail};
 #ifdef Q_OS_WIN
         encoders.append(prefix + QStringList{"-c:v", "h264_mf", "-b:v", "12M"} + tail);
 #endif
