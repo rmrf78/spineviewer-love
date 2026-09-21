@@ -179,9 +179,12 @@ QList<QStringList> ExportService::movieArguments(const QString& frameFolder, con
     if (format == MovieFormat::Mp4) {
         const QStringList prefix = base + QStringList{"-vf", "crop=trunc(iw/2)*2:trunc(ih/2)*2"};
         const QStringList tail{"-pix_fmt", "yuv420p", "-movflags", "+faststart", outputPath};
-        return {prefix + QStringList{"-c:v", "libx264", "-crf", "17"} + tail,
-                prefix + QStringList{"-c:v", "h264_mf", "-b:v", "12M"} + tail,
-                prefix + QStringList{"-c:v", "h264_nvenc", "-cq", "18"} + tail};
+        QStringList encoders{prefix + QStringList{"-c:v", "libx264", "-crf", "17"} + tail};
+#ifdef Q_OS_WIN
+        encoders.append(prefix + QStringList{"-c:v", "h264_mf", "-b:v", "12M"} + tail);
+#endif
+        encoders.append(prefix + QStringList{"-c:v", "h264_nvenc", "-cq", "18"} + tail);
+        return encoders;
     }
     if (format == MovieFormat::Gif)
         return {base + QStringList{"-vf", "split[s0][s1];[s0]palettegen=max_colors=256[p];[s1][p]paletteuse=dither=sierra2_4a",
