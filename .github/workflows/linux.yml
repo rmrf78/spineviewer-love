@@ -21,10 +21,12 @@ jobs:
           - runner: ubuntu-24.04
             qt_host: linux
             qt_arch: linux_gcc_64
+            qt_dir: gcc_64
             artifact: x64
           - runner: ubuntu-24.04-arm
             qt_host: linux_arm64
             qt_arch: linux_gcc_arm64
+            qt_dir: gcc_arm64
             artifact: arm64
 
     steps:
@@ -61,7 +63,7 @@ jobs:
         run: |
           cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_PREFIX_PATH=/opt/qt/6.8.3/${{ matrix.qt_arch }}
+            -DCMAKE_PREFIX_PATH=/opt/qt/6.8.3/${{ matrix.qt_dir }}
 
       - name: Build
         run: |
