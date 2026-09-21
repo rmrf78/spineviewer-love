@@ -43,7 +43,7 @@ jobs:
             libxcb-randr0-dev libxcb-render-util0-dev libxcb-shape0-dev \
             libxcb-shm0-dev libxcb-xinerama0-dev libxcb-xfixes0-dev libxcb-xkb-dev \
             libxcb-icccm4-dev libxcb-cursor0 \
-            libegl1 libegl1-mesa libgles2 libgles2-mesa libglvnd0 libgl1 \
+            libegl1 libgles2 libglvnd0 libgl1 \
             libfontconfig1 libfreetype6 libharfbuzz0b libpng16-16 libjpeg-turbo8 \
             libglib2.0-0 libdbus-1-3 libxkbcommon0 libxkbcommon-x11-0 libxcb1 \
             libx11-xcb1 libx11-6 libxext6 libxrender1 libxfixes3 libxi6 libxrandr2
