@@ -79,10 +79,16 @@ jobs:
 
       - name: Live2D Vulkan smoke test (software Vulkan)
         run: |
-          icd=$(ls /usr/share/vulkan/icd.d/lvp_icd.*.json | head -1)
-          echo "using $icd"
-          VK_ICD_FILENAMES="$icd" VK_DRIVER_FILES="$icd" \
-            ./build/main/qt/spinelove_live2d_smoke \
+          ls -l /usr/share/vulkan/icd.d || true
+          icd=$(find /usr/share/vulkan -name 'lvp*.json' | head -1)
+          if [ -n "$icd" ]; then
+            echo "lavapipe ICD: $icd"
+            export VK_ICD_FILENAMES="$icd"
+            export VK_DRIVER_FILES="$icd"
+          else
+            echo "no lavapipe ICD found; relying on loader autodetection"
+          fi
+          ./build/main/qt/spinelove_live2d_smoke \
             /tmp/cubism/CubismSdkForNative-5-r.3/Samples/Resources
 
       - name: Smoke test (offscreen)
