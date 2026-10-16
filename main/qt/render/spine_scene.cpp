@@ -192,7 +192,7 @@ private:
             m_lastLiveTime=m_frame->animationTime;
             cb->endExternal();
             const int nativeLayout=0;
-#else
+#elif QT_CONFIG(vulkan)
             // Live2D renders through the Cubism Vulkan backend, which shares
             // the VkDevice/VkQueue that Qt's RHI already owns.
             Live2DBridge::VulkanHandles handles;
@@ -220,6 +220,15 @@ private:
             // The module leaves its target in
             // VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL.
             const int nativeLayout=5;
+#else
+            // This Qt build has no Vulkan support (for example the Bionic Qt
+            // packages Termux ships), so the Live2D backend stays disabled.
+            Live2DBridge::VulkanHandles handles;
+            cb->beginExternal();
+            m_live2d->initialize(handles);
+            m_lastLiveTime=m_frame->animationTime;
+            cb->endExternal();
+            const int nativeLayout=0;
 #endif
             if(liveReady){
                 const quint64 handle=m_live2d->nativeTexture();
