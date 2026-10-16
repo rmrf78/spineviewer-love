@@ -127,6 +127,8 @@ elseif(UNIX)
         PUBLIC "${PROJECT_SOURCE_DIR}/main"
         PRIVATE "${PROJECT_SOURCE_DIR}/third_party/stb")
     target_link_libraries(spinelove_live2d_vulkan PUBLIC spinelove_live2d_cubism)
+    # The Qt bridge needs the module, and static link order matters.
+    target_link_libraries(spinelove_qt_live2d PUBLIC spinelove_live2d_vulkan)
 
     option(SPINELOVE_BUILD_LIVE2D_SMOKE "Build the offscreen Cubism Vulkan smoke test" OFF)
     if(SPINELOVE_BUILD_LIVE2D_SMOKE)
