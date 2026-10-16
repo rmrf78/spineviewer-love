@@ -48,6 +48,13 @@ jobs:
               clang cmake ninja pkg-config git \
               qt6-qtbase qt6-qtdeclarative qt6-qtshadertools
 
+            # Termux's qt6-qtbase ships the CMake config for its GTK3 platform
+            # theme plugin without the plugin itself, which makes
+            # find_package(Qt6 Gui) fail. Provide the file the config expects.
+            echo "--- working around the GTK3 platform theme plugin ---"
+            mkdir -p "$PREFIX/lib/qt6/plugins/platformthemes"
+            touch "$PREFIX/lib/qt6/plugins/platformthemes/libqgtk3.so"
+
             echo "--- qt version ---"
             qmake6 -query QT_VERSION
             qt_version="$(qmake6 -query QT_VERSION)"
