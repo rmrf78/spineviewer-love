@@ -1,0 +1,93 @@
+name: Termux Build
+
+# Builds the viewer for Termux (aarch64, Android Bionic libc) inside the
+# official Termux container and packages it as a .deb.
+#
+# Live2D is disabled here: the bundled Cubism Core is glibc-only. The viewer
+# itself (Spine runtimes + QML UI) builds and runs.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deb:
+    # Termux's primary architecture is aarch64; the arm runner is native, so
+    # no QEMU emulation is needed for the container.
+    runs-on: ubuntu-24.04-arm
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Build inside Termux
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work termux/termux-docker:aarch64 bash -lc '
+            set -e
+            echo "--- environment ---"
+            uname -m
+            cat "$PREFIX/etc/apt/sources.list" || true
+            echo "--- installing packages ---"
+            pkg update -y
+            pkg install -y \
+              clang cmake ninja pkg-config git \
+              qt6-qtbase qt6-qtdeclarative qt6-qtshadertools
+            echo "--- qt version ---"
+            qmake6 -query QT_VERSION
+            qt_version="$(qmake6 -query QT_VERSION)"
+            echo "--- configure ---"
+            cmake -S . -B build-termux -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DSPINELOVE_ENABLE_LIVE2D=OFF \
+              -DSPINELOVE_QT_VERSION="$qt_version"
+            echo "--- build ---"
+            cmake --build build-termux --target spinelove_qt --parallel 4
+            echo "--- smoke test (offscreen) ---"
+            QT_QPA_PLATFORM=offscreen timeout 5 ./build-termux/main/qt/spinelove_qt --viewport 640x360 --fixed-size || code=$?
+            if [ "${code:-0}" -ne 0 ] && [ "${code:-0}" -ne 124 ]; then
+              echo "smoke test failed with exit code $code"
+              exit "$code"
+            fi
+          '
+
+      - name: Package .deb
+        run: |
+          set -e
+          root=dist/spinelove-termux
+          rm -rf "$root"
+          mkdir -p "$root/DEBIAN" "$root/data/data/com.termux/files/usr/bin" \
+                   "$root/data/data/com.termux/files/usr/share/spinelove"
+
+          app=build-termux/main/qt
+          cp "$app/spinelove_qt" "$root/data/data/com.termux/files/usr/share/spinelove/spinelove"
+          cp -r "$app/NotoSansSC-Regular.ttf" "$root/data/data/com.termux/files/usr/share/spinelove/" 2>/dev/null || true
+          cp -r "$app/FrameworkShaders" "$root/data/data/com.termux/files/usr/share/spinelove/" 2>/dev/null || true
+          cat > "$root/data/data/com.termux/files/usr/bin/spinelove" <<'EOF'
+          #!/data/data/com.termux/files/usr/bin/bash
+          exec /data/data/com.termux/files/usr/share/spinelove/spinelove "$@"
+          EOF
+          chmod +x "$root/data/data/com.termux/files/usr/bin/spinelove"
+
+          cat > "$root/DEBIAN/control" <<EOF
+          Package: spinelove
+          Version: 1.0.0
+          Architecture: aarch64
+          Maintainer: SpineLoveEX
+          Depends: qt6-qtbase, qt6-qtdeclarative, qt6-qtshadertools
+          Section: graphics
+          Priority: optional
+          Description: SpineLoveEX viewer for Termux
+           Spine (all bundled runtimes) viewer with a Qt Quick interface.
+          EOF
+
+          dpkg-deb --build --root-owner-group "$root" dist/spinelove_1.0.0_aarch64.deb
+          dpkg-deb --info dist/spinelove_1.0.0_aarch64.deb
+
+      - name: Upload .deb
+        uses: actions/upload-artifact@v4
+        with:
+          name: spinelove-termux-aarch64
+          path: dist/spinelove_1.0.0_aarch64.deb
+          if-no-files-found: error

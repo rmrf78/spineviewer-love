@@ -1,13 +1,20 @@
 include_guard(GLOBAL)
 
+option(SPINELOVE_ENABLE_LIVE2D "Build the bundled Live2D backend" ON)
+
 set(SPINELOVE_CUBISM_ROOT "${PROJECT_SOURCE_DIR}/third_party/live2d")
 
 # ---------------------------------------------------------------------------
 # Qt bridge. This target always exists so the viewer can report "backend
 # unavailable" on platforms where the Cubism renderer is not compiled in.
 # ---------------------------------------------------------------------------
-add_library(spinelove_qt_live2d STATIC
-    "${PROJECT_SOURCE_DIR}/main/qt/core/live2d_bridge.cpp")
+if(SPINELOVE_ENABLE_LIVE2D)
+    set(SPINELOVE_LIVE2D_BRIDGE_SOURCE "${PROJECT_SOURCE_DIR}/main/qt/core/live2d_bridge.cpp")
+else()
+    set(SPINELOVE_LIVE2D_BRIDGE_SOURCE "${PROJECT_SOURCE_DIR}/main/qt/core/live2d_bridge_stub.cpp")
+endif()
+
+add_library(spinelove_qt_live2d STATIC "${SPINELOVE_LIVE2D_BRIDGE_SOURCE}")
 target_compile_features(spinelove_qt_live2d PUBLIC cxx_std_17)
 target_link_libraries(spinelove_qt_live2d PUBLIC Qt6::Core Qt6::Qml)
 target_include_directories(spinelove_qt_live2d PUBLIC "${PROJECT_SOURCE_DIR}/main/qt/core")
@@ -61,7 +68,9 @@ function(spinelove_cubism_vulkan_shaders out_var)
     set(${out_var} ${outputs} PARENT_SCOPE)
 endfunction()
 
-if(WIN32)
+if(NOT SPINELOVE_ENABLE_LIVE2D)
+    message(STATUS "Live2D: disabled by SPINELOVE_ENABLE_LIVE2D=OFF")
+elseif(WIN32)
     if(NOT MSVC OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
         message(FATAL_ERROR "The bundled Live2D Core requires the MSVC x64 ABI; provide a matching Core before using another Windows toolchain.")
     endif()

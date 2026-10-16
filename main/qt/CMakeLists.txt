@@ -41,7 +41,7 @@ add_custom_command(TARGET spinelove_qt POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:spinelove_qt>/render_d3d11/shaders"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECT_SOURCE_DIR}/main/render_d3d11/shaders/sprite.hlsl" "$<TARGET_FILE_DIR:spinelove_qt>/render_d3d11/shaders/sprite.hlsl")
 
-if(UNIX AND NOT ANDROID)
+if(UNIX AND NOT ANDROID AND SPINELOVE_ENABLE_LIVE2D)
     # The Cubism Vulkan renderer loads FrameworkShaders/<name>.spv at runtime.
     add_custom_command(TARGET spinelove_qt POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:spinelove_qt>/FrameworkShaders"
