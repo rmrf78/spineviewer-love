@@ -176,32 +176,61 @@ private:
         if(m_frame&&m_frame->live2d){
             m_live2d=m_frame->live2d;
 #if defined(Q_OS_WIN)
-            if(rhi()->backend()==QRhi::D3D11){
-                const auto* native=static_cast<const QRhiD3D11NativeHandles*>(rhi()->nativeHandles());
-                cb->beginExternal();
-                const bool ready=m_live2d->initialize(static_cast<ID3D11Device*>(native->dev),static_cast<ID3D11DeviceContext*>(native->context),m_frame->live2dShaderPath);
-                const float dt=m_frame->capture?0.f:float(std::clamp(m_frame->animationTime-m_lastLiveTime,0.0,0.1));
-                if(ready){
-                    const bool alreadyRendered=m_lastLiveFrame==m_frame&&m_live2d->nativeTexture()
-                        &&m_live2d->textureSize()==m_frame->size;
-                    liveReady=alreadyRendered||m_live2d->render(dt,m_frame->size.width(),m_frame->size.height(),0,-m_frame->titleHeight/std::max(1,m_frame->size.height()));
-                    if(liveReady)m_lastLiveFrame=m_frame;
-                }
-                m_lastLiveTime=m_frame->animationTime;
-                cb->endExternal();
-                if(liveReady){
-                    const quint64 handle=quint64(reinterpret_cast<quintptr>(m_live2d->nativeTexture()));
-                    if(!m_liveTexture||m_liveNative!=handle||m_liveTexture->pixelSize()!=m_live2d->textureSize()){
-                        m_liveDraw.reset();m_liveTexture.reset();
-                        m_liveTexture.reset(rhi()->newTexture(QRhiTexture::RGBA8,m_live2d->textureSize(),1));
-                        liveReady=m_liveTexture->createFrom({handle,0});m_liveNative=handle;
-                        if(!liveReady){m_liveTexture.reset();m_liveNative=0;}
-                    }
-                }
-            }else m_live2d->initialize(nullptr,nullptr,{});
+            const bool backendReady=rhi()->backend()==QRhi::D3D11;
+            const auto* native=backendReady?static_cast<const QRhiD3D11NativeHandles*>(rhi()->nativeHandles()):nullptr;
+            cb->beginExternal();
+            const bool ready=backendReady&&native
+                ?m_live2d->initialize(static_cast<ID3D11Device*>(native->dev),static_cast<ID3D11DeviceContext*>(native->context),m_frame->live2dShaderPath)
+                :m_live2d->initialize(nullptr,nullptr,{});
+            const float dt=m_frame->capture?0.f:float(std::clamp(m_frame->animationTime-m_lastLiveTime,0.0,0.1));
+            if(ready){
+                const bool alreadyRendered=m_lastLiveFrame==m_frame&&m_live2d->nativeTexture()
+                    &&m_live2d->textureSize()==m_frame->size;
+                liveReady=alreadyRendered||m_live2d->render(dt,m_frame->size.width(),m_frame->size.height(),0,-m_frame->titleHeight/std::max(1,m_frame->size.height()));
+                if(liveReady)m_lastLiveFrame=m_frame;
+            }
+            m_lastLiveTime=m_frame->animationTime;
+            cb->endExternal();
+            const int nativeLayout=0;
 #else
-            m_live2d->initialize(nullptr,nullptr,{});
+            // Live2D renders through the Cubism Vulkan backend, which shares
+            // the VkDevice/VkQueue that Qt's RHI already owns.
+            Live2DBridge::VulkanHandles handles;
+            const bool backendReady=rhi()->backend()==QRhi::Vulkan;
+            if(backendReady){
+                const auto* native=static_cast<const QRhiVulkanNativeHandles*>(rhi()->nativeHandles());
+                if(native){
+                    handles.physicalDevice=const_cast<void*>(static_cast<const void*>(native->physDev));
+                    handles.device=const_cast<void*>(static_cast<const void*>(native->dev));
+                    handles.queue=const_cast<void*>(static_cast<const void*>(native->gfxQueue));
+                    handles.queueFamily=native->gfxQueueFamilyIdx;
+                }
+            }
+            cb->beginExternal();
+            const bool ready=m_live2d->initialize(handles);
+            const float dt=m_frame->capture?0.f:float(std::clamp(m_frame->animationTime-m_lastLiveTime,0.0,0.1));
+            if(ready){
+                const bool alreadyRendered=m_lastLiveFrame==m_frame&&m_live2d->nativeTexture()
+                    &&m_live2d->textureSize()==m_frame->size;
+                liveReady=alreadyRendered||m_live2d->render(dt,m_frame->size.width(),m_frame->size.height(),0,-m_frame->titleHeight/std::max(1,m_frame->size.height()));
+                if(liveReady)m_lastLiveFrame=m_frame;
+            }
+            m_lastLiveTime=m_frame->animationTime;
+            cb->endExternal();
+            // The module leaves its target in
+            // VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL.
+            const int nativeLayout=5;
 #endif
+            if(liveReady){
+                const quint64 handle=m_live2d->nativeTexture();
+                if(!m_liveTexture||m_liveNative!=handle||m_liveTexture->pixelSize()!=m_live2d->textureSize()){
+                    m_liveDraw.reset();m_liveTexture.reset();
+                    m_liveTexture.reset(rhi()->newTexture(QRhiTexture::RGBA8,m_live2d->textureSize(),1));
+                    liveReady=m_liveTexture->createFrom({handle,nativeLayout});m_liveNative=handle;
+                    if(!liveReady){m_liveTexture.reset();m_liveNative=0;}
+                    else m_liveTexture->setNativeLayout(nativeLayout);
+                }
+            }
         }else if(m_frame){
             if(m_live2d){cb->beginExternal();m_live2d->processPendingCommands();cb->endExternal();}
             m_lastLiveTime=m_frame->animationTime;
