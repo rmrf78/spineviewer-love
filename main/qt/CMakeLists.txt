@@ -1,7 +1,7 @@
 set(SPINELOVE_QT_VERSION "6.8.3" CACHE STRING "Qt version")
 find_package(Qt6 ${SPINELOVE_QT_VERSION} EXACT REQUIRED COMPONENTS Core Gui Widgets Qml Quick QuickControls2 ShaderTools)
 set(CMAKE_AUTOMOC ON)
-include("${PROJECT_SOURCE_DIR}/cmake/Live2DWindows.cmake")
+include("${PROJECT_SOURCE_DIR}/cmake/Live2D.cmake")
 add_library(spinelove_qt_textures STATIC render/texture_loader.h render/texture_loader.cpp)
 target_compile_features(spinelove_qt_textures PUBLIC cxx_std_17)
 target_include_directories(spinelove_qt_textures PRIVATE "${PROJECT_SOURCE_DIR}/third_party/stb")
@@ -40,3 +40,14 @@ add_custom_command(TARGET spinelove_qt POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECT_SOURCE_DIR}/main/NotoSansSC-Regular.ttf" "$<TARGET_FILE_DIR:spinelove_qt>/NotoSansSC-Regular.ttf"
     COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:spinelove_qt>/render_d3d11/shaders"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECT_SOURCE_DIR}/main/render_d3d11/shaders/sprite.hlsl" "$<TARGET_FILE_DIR:spinelove_qt>/render_d3d11/shaders/sprite.hlsl")
+
+if(UNIX AND NOT ANDROID)
+    # The Cubism Vulkan renderer loads FrameworkShaders/<name>.spv at runtime.
+    add_custom_command(TARGET spinelove_qt POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:spinelove_qt>/FrameworkShaders"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SPINELOVE_CUBISM_VULKAN_SHADERS}
+                "$<TARGET_FILE_DIR:spinelove_qt>/FrameworkShaders")
+    # Build the Cubism framework and shaders together with the app so the
+    # Linux Live2D targets stay covered until the viewer links them.
+    add_dependencies(spinelove_qt spinelove_live2d_cubism spinelove_live2d_shaders)
+endif()

@@ -47,7 +47,8 @@ jobs:
             libegl1 libgles2 libglvnd0 libgl1 \
             libfontconfig1 libfreetype6 libharfbuzz0b libpng16-16 libjpeg-turbo8 \
             libglib2.0-0 libdbus-1-3 libxkbcommon0 libxkbcommon-x11-0 libxcb1 \
-            libx11-xcb1 libx11-6 libxext6 libxrender1 libxfixes3 libxi6 libxrandr2
+            libx11-xcb1 libx11-6 libxext6 libxrender1 libxfixes3 libxi6 libxrandr2 \
+            libvulkan-dev glslang-tools
 
       - name: Setup Python
         uses: actions/setup-python@v6
