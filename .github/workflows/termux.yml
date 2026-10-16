@@ -50,8 +50,8 @@ jobs:
             x11_line="deb https://packages.termux.dev/apt/termux-x11 stable main"
             for apt_dir in "$PREFIX_DIR/etc/apt" /etc/apt; do
               mkdir -p "$apt_dir/sources.list.d" 2>/dev/null || true
-              printf '%s\n%s\n' "$main_line" "$x11_line" > "$apt_dir/sources.list" 2>/dev/null || true
-              printf '%s\n%s\n' "$main_line" "$x11_line" > "$apt_dir/sources.list.d/termux.list" 2>/dev/null || true
+              printf "%s\n%s\n" "$main_line" "$x11_line" > "$apt_dir/sources.list" 2>/dev/null || true
+              printf "%s\n%s\n" "$main_line" "$x11_line" > "$apt_dir/sources.list.d/termux.list" 2>/dev/null || true
             done
 
             echo "--- installing packages ---"
