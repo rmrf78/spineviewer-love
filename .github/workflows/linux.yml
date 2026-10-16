@@ -88,7 +88,10 @@ jobs:
           else
             echo "no lavapipe ICD found; relying on loader autodetection"
           fi
-          ./build/main/qt/spinelove_live2d_smoke \
+          # The Cubism Vulkan renderer loads FrameworkShaders/*.spv relative
+          # to the working directory, so run from next to the executable.
+          cd build/main/qt
+          ./spinelove_live2d_smoke \
             /tmp/cubism/CubismSdkForNative-5-r.3/Samples/Resources
 
       - name: Smoke test (offscreen)
