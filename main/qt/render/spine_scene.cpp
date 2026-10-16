@@ -192,7 +192,7 @@ private:
             m_lastLiveTime=m_frame->animationTime;
             cb->endExternal();
             const int nativeLayout=0;
-#elif QT_CONFIG(vulkan)
+#elif QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)
             // Live2D renders through the Cubism Vulkan backend, which shares
             // the VkDevice/VkQueue that Qt's RHI already owns.
             Live2DBridge::VulkanHandles handles;
