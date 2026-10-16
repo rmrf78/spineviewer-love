@@ -37,6 +37,10 @@ jobs:
             echo "--- environment ---"
             uname -m
             cat "$PREFIX/etc/apt/sources.list" || true
+            echo "--- enabling the x11 repository (Qt6 lives there) ---"
+            mkdir -p "$PREFIX/etc/apt/sources.list.d"
+            echo "deb https://packages.termux.dev/apt/termux-x11 stable main" \
+              > "$PREFIX/etc/apt/sources.list.d/x11.list"
             echo "--- installing packages ---"
             pkg update -y
             pkg install -y \
