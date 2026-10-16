@@ -17,7 +17,9 @@ target_compile_features(spinelove_qt_controller PUBLIC cxx_std_17)
 target_include_directories(spinelove_qt_controller PRIVATE "${PROJECT_SOURCE_DIR}/third_party/stb")
 target_link_libraries(spinelove_qt_controller PUBLIC SpineLove::Playback SpineLove::QtLive2D spinelove_qt_scene Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Qml Qt6::Quick)
 set_target_properties(spinelove_qt_textures spinelove_qt_scene spinelove_qt_controller PROPERTIES POSITION_INDEPENDENT_CODE ON)
-qt_add_executable(spinelove_qt main.cpp render/spine_scene.h render/spine_scene.cpp)
+# Plain add_executable: qt_add_executable pulls in the Android packaging
+# helpers on Bionic Qt builds (Termux), which need a full Android SDK.
+add_executable(spinelove_qt main.cpp render/spine_scene.h render/spine_scene.cpp)
 if(WIN32)
     set_target_properties(spinelove_qt PROPERTIES WIN32_EXECUTABLE TRUE)
     target_sources(spinelove_qt PRIVATE "${PROJECT_SOURCE_DIR}/main/app.rc")
