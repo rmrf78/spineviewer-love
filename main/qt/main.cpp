@@ -47,6 +47,13 @@ private:QHash<QString,QString> m_strings;
 
 int main(int argc,char** argv){
     auto format=QSurfaceFormat::defaultFormat();format.setAlphaBufferSize(8);QSurfaceFormat::setDefaultFormat(format);
+    bool wantsOpenGL=false;
+    for(int i=1;i<argc;++i){if(QLatin1String(argv[i])=="--opengl")wantsOpenGL=true;}
+#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
+    // Live2D renders through the Cubism Vulkan backend and shares Qt's
+    // VkDevice, so the scene graph must use Vulkan unless OpenGL is forced.
+    if(!wantsOpenGL)QQuickWindow::setGraphicsApi(QSGRendererInterface::Vulkan);
+#endif
     QApplication app(argc,argv);
     app.setApplicationName("SpineLoveEX");app.setOrganizationName("SpineLoveEX");
     app.setWindowIcon(QIcon(QStringLiteral(":/main/app.ico")));
