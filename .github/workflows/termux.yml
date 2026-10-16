@@ -8,6 +8,14 @@ name: Termux Build
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - test
+    paths:
+      - ".github/workflows/termux.yml"
+      - "main/**"
+      - "cmake/**"
+      - "CMakeLists.txt"
 
 permissions:
   contents: read
