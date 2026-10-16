@@ -9,11 +9,12 @@ QtObject {
     property real brightness: 1
     function tone(r, g, b, sm, vm, darkValue, alpha) {
         const a = alpha === undefined ? 1 : alpha;
+        if (dark) return Qt.hsva(hue, 0, darkValue, a);
         return !customized ? Qt.rgba(r, g, b, a)
-             : dark ? Qt.hsva(hue, 0, darkValue, a) : Qt.hsva(hue, saturation * sm, brightness * vm, a);
+             : Qt.hsva(hue, saturation * sm, brightness * vm, a);
     }
 
-    property color text: customized && dark ? "white" : "black"
+    property color text: dark ? "white" : "black"
     property color window: tone(.96, .93, 1, .08, 1, .13)
     property color popup: tone(.96, .93, 1, .08, 1, .16, .98)
     property color button: tone(.71, .52, .96, .55, .96, .30)
@@ -31,7 +32,7 @@ QtObject {
     property color separator: tone(.71, .52, .96, .55, .96, .30)
     property color titleActive: tone(.65, .40, .96, .70, .96, .28)
     property color title: tone(1, .95, .97, .12, 1, .11)
-    property color titleText: customized && dark ? Qt.rgba(.9,.9,.9,1) : Qt.rgba(.118,.118,.118,1)
-    property color subtitle: customized && dark ? Qt.rgba(.65,.65,.65,.78) : Qt.rgba(.314,.314,.314,.784)
+    property color titleText: dark ? Qt.rgba(.9,.9,.9,1) : Qt.rgba(.118,.118,.118,1)
+    property color subtitle: dark ? Qt.rgba(.65,.65,.65,.78) : Qt.rgba(.314,.314,.314,.784)
     property color scrollBackground: tone(.94, .90, 1, .12, 1, .10)
 }

@@ -37,7 +37,7 @@ ViewerController::ViewerController(QObject* parent):QObject(parent),m_settings(Q
     std::sort(m_favorites.begin(),m_favorites.end());
     m_state={{"mode","spine"},{"baseFontPixels",16.0*uiScale},{"titleScale",uiScale},{"windowTitle","spinelove"},
         {"windowIcon",QUrl("qrc:/app.png")},{"exportAlpha",true},{"exportQueue",false},{"exportImageFps",30},{"exportVideoFps",60},
-        {"language",(m_settings.value("language","zh_CN").toString()=="en"?QString("en"):QString("zh_CN"))},{"themeHue",0.74},{"themeSaturation",0.83},{"themeBrightness",1.0},{"darkTheme",false},{"themeCustomized",false},
+        {"language",(m_settings.value("language","zh_CN").toString()=="en"?QString("en"):QString("zh_CN"))},{"themeHue",0.74},{"themeSaturation",0.83},{"themeBrightness",1.0},{"darkTheme",true},{"themeCustomized",false},
         {"resolutionPreset",m_settings.value("resolutionPreset",0)},{"spineRuntimeAvailable",true},{"slotHoverColor","#00ff00"},{"slotBoundsVisible",false}};
     QVariantList languages;for(const auto& p:std::vector<std::pair<QString,QString>>{{"zh_CN","简体中文"},{"en","English"}})
         languages.append(QVariantMap{{"id",p.first},{"name",p.second}});
@@ -438,7 +438,7 @@ void ViewerController::dispatch(const QString& c,const QVariant& v){
     else if(c=="theme.brightness")m_state["themeBrightness"]=v;
     else if(c=="theme.dark")m_state["darkTheme"]=v;
     else if(c=="theme.fontSize")m_state["baseFontPixels"]=std::clamp(f,10.f,50.f);
-    else if(c=="theme.reset"){m_state["themeHue"]=.74;m_state["themeSaturation"]=.83;m_state["themeBrightness"]=1.;m_state["darkTheme"]=false;}
+    else if(c=="theme.reset"){m_state["themeHue"]=.74;m_state["themeSaturation"]=.83;m_state["themeBrightness"]=1.;m_state["darkTheme"]=true;}
     else if(c.startsWith("window.")&&m_window){
         if(c=="window.close")m_window->close();else if(c=="window.minimize")m_window->showMinimized();
         else if(c=="window.move")m_window->startSystemMove();
