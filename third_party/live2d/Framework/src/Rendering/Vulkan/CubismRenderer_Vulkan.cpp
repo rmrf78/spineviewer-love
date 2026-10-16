@@ -19,6 +19,13 @@ VkFormat s_depthFormat;
 bool s_useRenderTarget = false;
 VkImage s_renderTargetImage;
 VkImageView s_renderTargetImageView;
+
+// Dynamic rendering is core in Vulkan 1.3 and promoted from
+// VK_KHR_dynamic_rendering. Resolve both spellings so a host device that only
+// exposes the extension still works, and degrade gracefully when neither is
+// available instead of calling a null pointer.
+PFN_vkCmdBeginRendering s_cmdBeginRendering = nullptr;
+PFN_vkCmdEndRendering s_cmdEndRendering = nullptr;
 }
 
 VkViewport GetViewport(csmFloat32 width, csmFloat32 height, csmFloat32 minDepth, csmFloat32 maxDepth)
@@ -817,7 +824,19 @@ void CubismRenderer_Vulkan::CreateDepthBuffer()
 
 void CubismRenderer_Vulkan::InitializeRenderer()
 {
-    vkCmdSetCullModeEXT = reinterpret_cast<PFN_vkCmdSetCullMode>(vkGetDeviceProcAddr(s_device, "vkCmdSetCullModeEXT"));
+    s_cmdBeginRendering = reinterpret_cast<PFN_vkCmdBeginRendering>(vkGetDeviceProcAddr(s_device, "vkCmdBeginRendering"));
+    s_cmdEndRendering = reinterpret_cast<PFN_vkCmdEndRendering>(vkGetDeviceProcAddr(s_device, "vkCmdEndRendering"));
+    if (s_cmdBeginRendering == nullptr)
+    {
+        s_cmdBeginRendering = reinterpret_cast<PFN_vkCmdBeginRendering>(vkGetDeviceProcAddr(s_device, "vkCmdBeginRenderingKHR"));
+        s_cmdEndRendering = reinterpret_cast<PFN_vkCmdEndRendering>(vkGetDeviceProcAddr(s_device, "vkCmdEndRenderingKHR"));
+    }
+    if (s_cmdBeginRendering == nullptr)
+        CubismLogError("This Vulkan device has no dynamic rendering (Vulkan 1.3 or VK_KHR_dynamic_rendering); Live2D cannot draw.");
+
+    vkCmdSetCullModeEXT = reinterpret_cast<PFN_vkCmdSetCullMode>(vkGetDeviceProcAddr(s_device, "vkCmdSetCullMode"));
+    if (vkCmdSetCullModeEXT == nullptr)
+        vkCmdSetCullModeEXT = reinterpret_cast<PFN_vkCmdSetCullMode>(vkGetDeviceProcAddr(s_device, "vkCmdSetCullModeEXT"));
 
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -1117,11 +1136,11 @@ void CubismRenderer_Vulkan::DrawMeshVulkan(const CubismModel& model, const csmIn
 
     if (IsCulling())
     {
-        vkCmdSetCullModeEXT(commandBuffer, VK_CULL_MODE_BACK_BIT);
+        if (vkCmdSetCullModeEXT != nullptr) vkCmdSetCullModeEXT(commandBuffer, VK_CULL_MODE_BACK_BIT);
     }
     else
     {
-        vkCmdSetCullModeEXT(commandBuffer, VK_CULL_MODE_NONE);
+        if (vkCmdSetCullModeEXT != nullptr) vkCmdSetCullModeEXT(commandBuffer, VK_CULL_MODE_NONE);
     }
 
     CopyToBuffer(index, model.GetDrawableVertexCount(index),
@@ -1187,12 +1206,16 @@ void CubismRenderer_Vulkan::BeginRendering(VkCommandBuffer drawCommandBuffer, bo
     renderingInfo.pColorAttachments = &colorAttachment;
     renderingInfo.pDepthAttachment = &depthStencilAttachment;
 
-    vkCmdBeginRendering(drawCommandBuffer, &renderingInfo);
+    if (s_cmdBeginRendering == nullptr)
+        return;
+
+    s_cmdBeginRendering(drawCommandBuffer, &renderingInfo);
 }
 
 void CubismRenderer_Vulkan::EndRendering(VkCommandBuffer drawCommandBuffer)
 {
-    vkCmdEndRendering(drawCommandBuffer);
+    if (s_cmdEndRendering != nullptr)
+        s_cmdEndRendering(drawCommandBuffer);
 
     if (s_useRenderTarget)
     {
@@ -1224,6 +1247,11 @@ void CubismRenderer_Vulkan::EndRendering(VkCommandBuffer drawCommandBuffer)
 
 void CubismRenderer_Vulkan::DoDrawModel()
 {
+    // Without dynamic rendering and a working cull-mode entry point the
+    // pipelines created for this device are not usable; skip drawing instead
+    // of binding a null pipeline.
+    if (s_cmdBeginRendering == nullptr || vkCmdSetCullModeEXT == nullptr)
+        return;
 
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;

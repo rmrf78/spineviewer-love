@@ -14,6 +14,9 @@
 #include <QTimer>
 #include <QScreen>
 #include <QSurfaceFormat>
+#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID) && __has_include(<vulkan/vulkan.h>)
+#include <QVulkanInstance>
+#endif
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -49,11 +52,6 @@ int main(int argc,char** argv){
     auto format=QSurfaceFormat::defaultFormat();format.setAlphaBufferSize(8);QSurfaceFormat::setDefaultFormat(format);
     bool wantsOpenGL=false;
     for(int i=1;i<argc;++i){if(QLatin1String(argv[i])=="--opengl")wantsOpenGL=true;}
-#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
-    // Live2D renders through the Cubism Vulkan backend and shares Qt's
-    // VkDevice, so the scene graph must use Vulkan unless OpenGL is forced.
-    if(!wantsOpenGL)QQuickWindow::setGraphicsApi(QSGRendererInterface::Vulkan);
-#endif
     QApplication app(argc,argv);
     app.setApplicationName("SpineLoveEX");app.setOrganizationName("SpineLoveEX");
     app.setWindowIcon(QIcon(QStringLiteral(":/main/app.ico")));
@@ -61,6 +59,16 @@ int main(int argc,char** argv){
     QSettings preferences(QSettings::defaultFormat(),QSettings::UserScope,"SpineLoveEX","Viewer");
     const float desktopScale=app.primaryScreen()?float(app.primaryScreen()->geometry().width()*app.primaryScreen()->devicePixelRatio()/1920.0):1.f;
     preferences.setValue("uiScale",window_resolution_presets::UiScale(preferences.value("resolutionPreset",0).toInt(),desktopScale));
+#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID) && __has_include(<vulkan/vulkan.h>)
+    // Live2D renders through the Cubism Vulkan backend, which shares Qt's
+    // VkDevice, so prefer a Vulkan scene graph. Only do that when a Vulkan
+    // instance can actually be created, otherwise the viewer would fail to
+    // start on machines that only have OpenGL.
+    if(!wantsOpenGL){
+        QVulkanInstance probe;
+        if(probe.create())QQuickWindow::setGraphicsApi(QSGRendererInterface::Vulkan);
+    }
+#endif
     if(args.contains("--opengl"))QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
     const int fontId=QFontDatabase::addApplicationFont(assetPath("NotoSansSC-Regular.ttf"));
     if(fontId>=0){const auto names=QFontDatabase::applicationFontFamilies(fontId);if(!names.isEmpty())app.setFont(QFont(names.front()));}

@@ -142,4 +142,11 @@ elseif(UNIX)
             COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SPINELOVE_CUBISM_VULKAN_SHADERS}
                     "$<TARGET_FILE_DIR:spinelove_live2d_smoke>/FrameworkShaders")
     endif()
+
+    option(SPINELOVE_BUILD_QRHI_PROBE "Build the QRhi Vulkan capability probe" OFF)
+    if(SPINELOVE_BUILD_QRHI_PROBE)
+        add_executable(spinelove_qrhi_probe "${PROJECT_SOURCE_DIR}/tools/qrhi_vulkan_probe/main.cpp")
+        target_compile_features(spinelove_qrhi_probe PRIVATE cxx_std_17)
+        target_link_libraries(spinelove_qrhi_probe PRIVATE Qt6::Gui Qt6::GuiPrivate Vulkan::Vulkan)
+    endif()
 endif()
