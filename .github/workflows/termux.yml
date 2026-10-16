@@ -57,7 +57,7 @@ jobs:
             echo "--- installing packages ---"
             pkg update -y
             pkg install -y \
-              clang cmake ninja pkg-config git \
+              clang cmake ninja pkg-config git dbus \
               qt6-qtbase qt6-qtdeclarative qt6-qtshadertools
 
             # The Termux qt6-qtbase package ships the CMake config for its GTK3 platform
@@ -127,7 +127,7 @@ jobs:
           Version: 1.0.0
           Architecture: aarch64
           Maintainer: SpineLoveEX
-          Depends: qt6-qtbase, qt6-qtdeclarative, qt6-qtshadertools
+          Depends: qt6-qtbase, qt6-qtdeclarative, qt6-qtshadertools, dbus
           Section: graphics
           Priority: optional
           Description: SpineLoveEX viewer for Termux
