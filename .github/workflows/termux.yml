@@ -36,32 +36,54 @@ jobs:
             set -e
             echo "--- environment ---"
             uname -m
-            cat "$PREFIX/etc/apt/sources.list" || true
+
             echo "--- enabling the x11 repository (Qt6 lives there) ---"
             mkdir -p "$PREFIX/etc/apt/sources.list.d"
             echo "deb https://packages.termux.dev/apt/termux-x11 stable main" \
               > "$PREFIX/etc/apt/sources.list.d/x11.list"
+
             echo "--- installing packages ---"
             pkg update -y
             pkg install -y \
               clang cmake ninja pkg-config git \
               qt6-qtbase qt6-qtdeclarative qt6-qtshadertools
+
             echo "--- qt version ---"
             qmake6 -query QT_VERSION
             qt_version="$(qmake6 -query QT_VERSION)"
+
+            # The mounted workspace is owned by the runner user, the container
+            # runs as Termux, so build in the container home instead.
+            echo "--- copying sources ---"
+            rm -rf "$HOME/src"
+            mkdir -p "$HOME/src"
+            tar -C /work -cf - --exclude=./build-termux --exclude=./dist --exclude=./.git . \
+              | tar -C "$HOME/src" -xf -
+            cd "$HOME/src"
+
             echo "--- configure ---"
-            cmake -S . -B build-termux -G Ninja \
+            cmake -S . -B build -G Ninja \
               -DCMAKE_BUILD_TYPE=Release \
               -DSPINELOVE_ENABLE_LIVE2D=OFF \
               -DSPINELOVE_QT_VERSION="$qt_version"
+
             echo "--- build ---"
-            cmake --build build-termux --target spinelove_qt --parallel 4
+            cmake --build build --target spinelove_qt --parallel 4
+
             echo "--- smoke test (offscreen) ---"
-            QT_QPA_PLATFORM=offscreen timeout 5 ./build-termux/main/qt/spinelove_qt --viewport 640x360 --fixed-size || code=$?
-            if [ "${code:-0}" -ne 0 ] && [ "${code:-0}" -ne 124 ]; then
+            code=0
+            QT_QPA_PLATFORM=offscreen timeout 5 ./build/main/qt/spinelove_qt \
+              --viewport 640x360 --fixed-size || code=$?
+            if [ "$code" -ne 0 ] && [ "$code" -ne 124 ]; then
               echo "smoke test failed with exit code $code"
               exit "$code"
             fi
+
+            echo "--- collecting artifacts ---"
+            rm -rf /work/dist/termux-out
+            mkdir -p /work/dist/termux-out
+            cp build/main/qt/spinelove_qt /work/dist/termux-out/
+            cp build/main/qt/NotoSansSC-Regular.ttf /work/dist/termux-out/ 2>/dev/null || true
           '
 
       - name: Package .deb
@@ -69,13 +91,14 @@ jobs:
           set -e
           root=dist/spinelove-termux
           rm -rf "$root"
-          mkdir -p "$root/DEBIAN" "$root/data/data/com.termux/files/usr/bin" \
+          mkdir -p "$root/DEBIAN" \
+                   "$root/data/data/com.termux/files/usr/bin" \
                    "$root/data/data/com.termux/files/usr/share/spinelove"
 
-          app=build-termux/main/qt
-          cp "$app/spinelove_qt" "$root/data/data/com.termux/files/usr/share/spinelove/spinelove"
-          cp -r "$app/NotoSansSC-Regular.ttf" "$root/data/data/com.termux/files/usr/share/spinelove/" 2>/dev/null || true
-          cp -r "$app/FrameworkShaders" "$root/data/data/com.termux/files/usr/share/spinelove/" 2>/dev/null || true
+          cp dist/termux-out/spinelove_qt "$root/data/data/com.termux/files/usr/share/spinelove/spinelove"
+          cp dist/termux-out/NotoSansSC-Regular.ttf \
+             "$root/data/data/com.termux/files/usr/share/spinelove/" 2>/dev/null || true
+
           cat > "$root/data/data/com.termux/files/usr/bin/spinelove" <<'EOF'
           #!/data/data/com.termux/files/usr/bin/bash
           exec /data/data/com.termux/files/usr/share/spinelove/spinelove "$@"
