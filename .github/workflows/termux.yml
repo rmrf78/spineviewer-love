@@ -32,10 +32,21 @@ jobs:
 
       - name: Build inside Termux
         run: |
+          mkdir -p dist/termux-out
+          chmod 777 dist/termux-out
           docker run --rm -v "$PWD:/work" -w /work termux/termux-docker:aarch64 bash -lc '
             set -e
+            # Do not depend on the image environment: pkg install can leave the
+            # login shell without PREFIX, so pin the Termux layout explicitly.
+            export PREFIX=/data/data/com.termux/files/usr
+            export HOME=/data/data/com.termux/files/home
+            export PATH="$PREFIX/bin:$PATH"
+            export LD_LIBRARY_PATH="$PREFIX/lib"
+            export TMPDIR="$PREFIX/tmp"
+
             echo "--- environment ---"
             uname -m
+            echo "PREFIX=$PREFIX"
 
             echo "--- enabling the x11 repository (Qt6 lives there) ---"
             mkdir -p "$PREFIX/etc/apt/sources.list.d"
@@ -87,8 +98,6 @@ jobs:
             fi
 
             echo "--- collecting artifacts ---"
-            rm -rf /work/dist/termux-out
-            mkdir -p /work/dist/termux-out
             cp build/main/qt/spinelove_qt /work/dist/termux-out/
             cp build/main/qt/NotoSansSC-Regular.ttf /work/dist/termux-out/ 2>/dev/null || true
           '
