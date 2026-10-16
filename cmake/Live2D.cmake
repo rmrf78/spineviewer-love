@@ -115,4 +115,17 @@ elseif(UNIX)
     target_link_libraries(spinelove_live2d_cubism PUBLIC Vulkan::Vulkan)
 
     spinelove_cubism_vulkan_shaders(SPINELOVE_CUBISM_VULKAN_SHADERS)
+
+    option(SPINELOVE_BUILD_LIVE2D_SMOKE "Build the offscreen Cubism Vulkan smoke test" OFF)
+    if(SPINELOVE_BUILD_LIVE2D_SMOKE)
+        add_executable(spinelove_live2d_smoke "${PROJECT_SOURCE_DIR}/tools/live2d_vk_smoke/main.cpp")
+        target_compile_features(spinelove_live2d_smoke PRIVATE cxx_std_17)
+        target_include_directories(spinelove_live2d_smoke PRIVATE "${PROJECT_SOURCE_DIR}/third_party/stb")
+        target_link_libraries(spinelove_live2d_smoke PRIVATE spinelove_live2d_cubism)
+        add_dependencies(spinelove_live2d_smoke spinelove_live2d_shaders)
+        add_custom_command(TARGET spinelove_live2d_smoke POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:spinelove_live2d_smoke>/FrameworkShaders"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SPINELOVE_CUBISM_VULKAN_SHADERS}
+                    "$<TARGET_FILE_DIR:spinelove_live2d_smoke>/FrameworkShaders")
+    endif()
 endif()

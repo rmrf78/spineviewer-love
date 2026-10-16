@@ -48,7 +48,13 @@ jobs:
             libfontconfig1 libfreetype6 libharfbuzz0b libpng16-16 libjpeg-turbo8 \
             libglib2.0-0 libdbus-1-3 libxkbcommon0 libxkbcommon-x11-0 libxcb1 \
             libx11-xcb1 libx11-6 libxext6 libxrender1 libxfixes3 libxi6 libxrandr2 \
-            libvulkan-dev glslang-tools
+            libvulkan-dev glslang-tools mesa-vulkan-drivers
+
+      - name: Fetch Cubism sample model
+        run: |
+          curl -sSL --retry 3 -o /tmp/cubism-sdk.zip \
+            https://cubism.live2d.com/sdk-native/bin/CubismSdkForNative-5-r.3.zip
+          unzip -q /tmp/cubism-sdk.zip 'CubismSdkForNative-5-r.3/Samples/Resources/*' -d /tmp/cubism
 
       - name: Setup Python
         uses: actions/setup-python@v6
@@ -64,11 +70,20 @@ jobs:
         run: |
           cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
+            -DSPINELOVE_BUILD_LIVE2D_SMOKE=ON \
             -DCMAKE_PREFIX_PATH=/opt/qt/6.8.3/${{ matrix.qt_dir }}
 
       - name: Build
         run: |
-          cmake --build build --target spinelove_qt --parallel 4
+          cmake --build build --target spinelove_qt spinelove_live2d_smoke --parallel 4
+
+      - name: Live2D Vulkan smoke test (software Vulkan)
+        run: |
+          icd=$(ls /usr/share/vulkan/icd.d/lvp_icd.*.json | head -1)
+          echo "using $icd"
+          VK_ICD_FILENAMES="$icd" VK_DRIVER_FILES="$icd" \
+            ./build/main/qt/spinelove_live2d_smoke \
+            /tmp/cubism/CubismSdkForNative-5-r.3/Samples/Resources
 
       - name: Smoke test (offscreen)
         env:
