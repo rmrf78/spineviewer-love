@@ -36,9 +36,9 @@ jobs:
           chmod 777 dist/termux-out
           docker run --rm -v "$PWD:/work" -w /work termux/termux-docker:aarch64 bash -lc '
             set -e
-            # Let pkg set up its own environment; derive the prefix from the
-            # pkg entry point instead of trusting an inherited $PREFIX.
-            PREFIX_DIR="$(cd "$(dirname "$(command -v pkg)")/.." && pwd)"
+            # Termux always lives here; the login shell does not necessarily
+            # export $PREFIX, and pkg is not always on PATH for command -v.
+            PREFIX_DIR=/data/data/com.termux/files/usr
             echo "--- environment ---"
             uname -m
             id -u
