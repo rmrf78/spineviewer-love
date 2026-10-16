@@ -15,8 +15,8 @@
 #include <vector>
 #include <unordered_map>
 
-#if defined(Q_OS_WIN)
 #include "../../live2d/live2d_module.h"
+#if defined(Q_OS_WIN)
 #include "../../render_d3d11/d3d11_renderer.h"
 #include <objbase.h>
 #include <wrl/client.h>
@@ -76,13 +76,14 @@ struct Live2DBridge::Impl {
     QString exportError;
     QString acknowledgedExportCommand;
     quint64 exportFrameSerial = 0;
+    live2d::Live2DModule module;
 #if defined(Q_OS_WIN)
     Microsoft::WRL::ComPtr<ID3D11Device> device;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
     std::unique_ptr<sl_d3d11::D3D11Renderer> textures;
-    live2d::Live2DModule module;
     SlTextureId target = 0;
     bool comOwned = false;
+#endif
     std::vector<int> queue;
     bool queuePlaying = false;
     std::size_t queueIndex = 0;
@@ -430,7 +431,6 @@ struct Live2DBridge::Impl {
         QMutexLocker lock(&mutex);
         snapshot = std::move(result);
     }
-#endif
 
     bool onRenderThread() const { return renderThread == QThread::currentThreadId(); }
 };
@@ -460,7 +460,11 @@ void Live2DBridge::command(const QString& name, const QVariant& value) {
 }
 QVariantMap Live2DBridge::state() const { QMutexLocker lock(&m->mutex); return m->snapshot; }
 
+#if defined(Q_OS_WIN)
 bool Live2DBridge::initialize(ID3D11Device* device, ID3D11DeviceContext* context, const QString& shaderPath) {
+#else
+bool Live2DBridge::initialize(const VulkanHandles& handles) {
+#endif
 #if defined(Q_OS_WIN)
     if (m->renderThread && !m->onRenderThread()) return false;
     if (m->device.Get() == device && m->module.RenderingBackendAvailable()) return true;
@@ -488,16 +492,31 @@ bool Live2DBridge::initialize(ID3D11Device* device, ID3D11DeviceContext* context
     m->publish(true);
     return true;
 #else
-    Q_UNUSED(device); Q_UNUSED(context); Q_UNUSED(shaderPath);
-    QMutexLocker lock(&m->mutex);
-    m->snapshot.insert("error", "The Live2D GLES/Metal backend has not been integrated on this platform yet.");
-    m->snapshot.insert("capabilities", QVariantMap{});
-    return false;
+    if (m->renderThread && !m->onRenderThread()) return false;
+    if (m->module.RenderingBackendAvailable()) return true;
+    shutdown();
+    m->renderThread = QThread::currentThreadId();
+    if (handles.device == nullptr || handles.queue == nullptr) {
+        m->error = "Qt did not provide a Vulkan device/queue."; m->publish(true); return false;
+    }
+    live2d::VulkanHandles moduleHandles;
+    moduleHandles.physicalDevice = handles.physicalDevice;
+    moduleHandles.device = handles.device;
+    moduleHandles.queue = handles.queue;
+    moduleHandles.queueFamily = handles.queueFamily;
+    if (!m->module.Initialize(moduleHandles)) {
+        m->error = QString::fromUtf8(m->module.LastError().c_str()); m->publish(true); return false;
+    }
+    m->error.clear();
+
+    ++m->deviceGeneration;
+    if (!m->lastManifest.isEmpty()) m->open(m->lastManifest);
+    m->publish(true);
+    return true;
 #endif
 }
 
 bool Live2DBridge::processPendingCommands() {
-#if defined(Q_OS_WIN)
     if (!m->onRenderThread() || !m->module.RenderingBackendAvailable() || m->module.ExportSessionActive()) return false;
     std::deque<Command> commands;
     {
@@ -509,13 +528,9 @@ bool Live2DBridge::processPendingCommands() {
     for (const auto& command : commands) m->apply(command);
     if (!commands.empty()) m->publish(true);
     return !commands.empty();
-#else
-    return false;
-#endif
 }
 
 bool Live2DBridge::render(float deltaSeconds, int width, int height, float centerOffsetX, float centerOffsetY) {
-#if defined(Q_OS_WIN)
     if (!m->onRenderThread() || !m->module.RenderingBackendAvailable()) return false;
     std::deque<Command> commands;
     const bool sessionAtEntry = m->module.ExportSessionActive();
@@ -583,6 +598,7 @@ bool Live2DBridge::render(float deltaSeconds, int width, int height, float cente
     if (!m->module.HasImportedModel() || width <= 0 || height <= 0) {
         acknowledge(false); m->publish(!commands.empty()); return false;
     }
+#if defined(Q_OS_WIN)
     if (m->module.ExportSessionActive() && !transactionNeedsFrame && !m->forceExportFrame && m->target) {
 
         acknowledge(true); m->publish(!commands.empty()); return true;
@@ -614,6 +630,22 @@ bool Live2DBridge::render(float deltaSeconds, int width, int height, float cente
     ID3D11RenderTargetView* previous = previousTarget.Get();
     m->context->OMSetRenderTargets(1, &previous, previousDepth.Get());
     if (count) m->context->RSSetViewports(count, previousViewports);
+#else
+    if (m->module.ExportSessionActive() && !transactionNeedsFrame && !m->forceExportFrame
+        && m->size == QSize(width, height)) {
+        acknowledge(true); m->publish(!commands.empty()); return true;
+    }
+    m->size = QSize(width, height);
+    const bool exporting = m->module.ExportSessionActive();
+    float remaining = exporting || sessionAtEntry || transaction ? fixedDelta
+        : (std::isfinite(deltaSeconds) ? (std::max)(0.0f, deltaSeconds) : 0.0f);
+    bool ok = true;
+    do {
+        const float step = exporting ? (std::min)(0.1f, remaining) : remaining;
+        ok = m->module.TickAndRender(step, width, height, centerOffsetX, centerOffsetY, true);
+        remaining = exporting ? remaining - step : 0;
+    } while (ok && remaining > 0.000001f);
+#endif
     m->advanceQueue();
     if (ok && exporting) m->forceExportFrame = false;
     acknowledge(ok);
@@ -623,40 +655,39 @@ bool Live2DBridge::render(float deltaSeconds, int width, int height, float cente
     });
     m->publish(immediateUiPublish);
     return ok;
-#else
-    Q_UNUSED(deltaSeconds); Q_UNUSED(width); Q_UNUSED(height); Q_UNUSED(centerOffsetX); Q_UNUSED(centerOffsetY);
-    return false;
-#endif
 }
 
-ID3D11Texture2D* Live2DBridge::nativeTexture() const noexcept {
+quint64 Live2DBridge::nativeTexture() const noexcept {
 #if defined(Q_OS_WIN)
-    return m->textures && m->target ? m->textures->GetNativeTexture(m->target) : nullptr;
+    return m->textures && m->target
+        ? static_cast<quint64>(reinterpret_cast<quintptr>(m->textures->GetNativeTexture(m->target)))
+        : 0;
 #else
-    return nullptr;
+    return m->module.NativeRenderTargetImage();
 #endif
 }
 QSize Live2DBridge::textureSize() const noexcept { return m->size; }
 
 void Live2DBridge::shutdown() {
-#if defined(Q_OS_WIN)
-
     Q_ASSERT(!m->renderThread || m->onRenderThread());
+#if defined(Q_OS_WIN)
     m->rememberForDeviceRecovery();
+#endif
     m->module.Shutdown();
-    m->textures.reset(); m->target = 0; m->size = {};
-    m->context.Reset(); m->device.Reset();
+    m->size = {};
     m->queuePlaying = false; m->queue.clear(); m->queueIndex = 0;
     m->forceExportFrame = false;
     m->petting.reset();
+#if defined(Q_OS_WIN)
+    m->textures.reset(); m->target = 0;
+    m->context.Reset(); m->device.Reset();
     if (m->comOwned) { CoUninitialize(); m->comOwned = false; }
+#endif
     m->renderThread = nullptr;
     m->publish(true);
-#endif
 }
 
 bool Live2DBridge::beginExportSession(int motionIndex, float fps) {
-#if defined(Q_OS_WIN)
     if (!m->onRenderThread() || motionIndex < 0 || static_cast<std::size_t>(motionIndex) >= m->module.MotionNames().size() || !std::isfinite(fps) || fps <= 0) return false;
     if (m->module.ExportSessionActive()) return false;
 
@@ -666,24 +697,15 @@ bool Live2DBridge::beginExportSession(int motionIndex, float fps) {
     m->forceExportFrame = true;
     m->publish(true);
     return true;
-#else
-    Q_UNUSED(motionIndex); Q_UNUSED(fps); return false;
-#endif
 }
 bool Live2DBridge::exportSessionSwitchMotion(int motionIndex) {
-#if defined(Q_OS_WIN)
     const bool ok = m->onRenderThread() && motionIndex >= 0 && m->module.ExportSessionSwitchMotion(static_cast<std::size_t>(motionIndex));
     if (ok) m->forceExportFrame = true;
     return ok;
-#else
-    Q_UNUSED(motionIndex); return false;
-#endif
 }
 void Live2DBridge::endExportSession() {
-#if defined(Q_OS_WIN)
     if (!m->onRenderThread()) return;
     m->module.EndExportSession();
     m->forceExportFrame = false;
     m->publish(true);
-#endif
 }
