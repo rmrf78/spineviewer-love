@@ -36,22 +36,20 @@ jobs:
           chmod 777 dist/termux-out
           docker run --rm -v "$PWD:/work" -w /work termux/termux-docker:aarch64 bash -lc '
             set -e
-            # Do not depend on the image environment: pkg install can leave the
-            # login shell without PREFIX, so pin the Termux layout explicitly.
-            export PREFIX=/data/data/com.termux/files/usr
-            export HOME=/data/data/com.termux/files/home
-            export PATH="$PREFIX/bin:$PATH"
-            export LD_LIBRARY_PATH="$PREFIX/lib"
-            export TMPDIR="$PREFIX/tmp"
-
+            # Let pkg set up its own environment; derive the prefix from the
+            # pkg entry point instead of trusting an inherited $PREFIX.
+            PREFIX_DIR="$(cd "$(dirname "$(command -v pkg)")/.." && pwd)"
             echo "--- environment ---"
             uname -m
-            echo "PREFIX=$PREFIX"
+            id -u
 
-            echo "--- enabling the x11 repository (Qt6 lives there) ---"
-            mkdir -p "$PREFIX/etc/apt/sources.list.d"
-            echo "deb https://packages.termux.dev/apt/termux-x11 stable main" \
-              > "$PREFIX/etc/apt/sources.list.d/x11.list"
+            # Qt6 lives in the x11 repository. Depending on how the image
+            # configures apt the active sources dir differs, so feed both.
+            x11_line="deb https://packages.termux.dev/apt/termux-x11 stable main"
+            mkdir -p "$PREFIX_DIR/etc/apt/sources.list.d" 2>/dev/null || true
+            echo "$x11_line" > "$PREFIX_DIR/etc/apt/sources.list.d/x11.list" 2>/dev/null || true
+            mkdir -p /etc/apt/sources.list.d 2>/dev/null || true
+            echo "$x11_line" > /etc/apt/sources.list.d/x11.list 2>/dev/null || true
 
             echo "--- installing packages ---"
             pkg update -y
@@ -63,8 +61,8 @@ jobs:
             # theme plugin without the plugin itself, which makes
             # find_package(Qt6 Gui) fail. Provide the file the config expects.
             echo "--- working around the GTK3 platform theme plugin ---"
-            mkdir -p "$PREFIX/lib/qt6/plugins/platformthemes"
-            touch "$PREFIX/lib/qt6/plugins/platformthemes/libqgtk3.so"
+            mkdir -p "$PREFIX_DIR/lib/qt6/plugins/platformthemes"
+            touch "$PREFIX_DIR/lib/qt6/plugins/platformthemes/libqgtk3.so"
 
             echo "--- qt version ---"
             qmake6 -query QT_VERSION
