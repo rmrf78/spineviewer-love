@@ -116,12 +116,24 @@ elseif(UNIX)
 
     spinelove_cubism_vulkan_shaders(SPINELOVE_CUBISM_VULKAN_SHADERS)
 
+    add_library(spinelove_live2d_vulkan STATIC
+        "${PROJECT_SOURCE_DIR}/main/live2d/live2d_module.cpp"
+        "${PROJECT_SOURCE_DIR}/main/render_vulkan/vk_renderer.cpp"
+        "${PROJECT_SOURCE_DIR}/main/audio/model_audio_stub.cpp"
+        "${PROJECT_SOURCE_DIR}/main/sl_text_codec.cpp")
+    target_compile_features(spinelove_live2d_vulkan PUBLIC cxx_std_17)
+    set_target_properties(spinelove_live2d_vulkan PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    target_include_directories(spinelove_live2d_vulkan
+        PUBLIC "${PROJECT_SOURCE_DIR}/main"
+        PRIVATE "${PROJECT_SOURCE_DIR}/third_party/stb")
+    target_link_libraries(spinelove_live2d_vulkan PUBLIC spinelove_live2d_cubism)
+
     option(SPINELOVE_BUILD_LIVE2D_SMOKE "Build the offscreen Cubism Vulkan smoke test" OFF)
     if(SPINELOVE_BUILD_LIVE2D_SMOKE)
         add_executable(spinelove_live2d_smoke "${PROJECT_SOURCE_DIR}/tools/live2d_vk_smoke/main.cpp")
         target_compile_features(spinelove_live2d_smoke PRIVATE cxx_std_17)
         target_include_directories(spinelove_live2d_smoke PRIVATE "${PROJECT_SOURCE_DIR}/third_party/stb")
-        target_link_libraries(spinelove_live2d_smoke PRIVATE spinelove_live2d_cubism)
+        target_link_libraries(spinelove_live2d_smoke PRIVATE spinelove_live2d_cubism spinelove_live2d_vulkan)
         add_dependencies(spinelove_live2d_smoke spinelove_live2d_shaders)
         add_custom_command(TARGET spinelove_live2d_smoke POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:spinelove_live2d_smoke>/FrameworkShaders"

@@ -91,8 +91,10 @@ jobs:
           # The Cubism Vulkan renderer loads FrameworkShaders/*.spv relative
           # to the working directory, so run from next to the executable.
           cd build/main/qt
-          ./spinelove_live2d_smoke \
-            /tmp/cubism/CubismSdkForNative-5-r.3/Samples/Resources
+          resources=/tmp/cubism/CubismSdkForNative-5-r.3/Samples/Resources
+          # 1) raw Cubism renderer      2) the viewer's Live2DModule
+          ./spinelove_live2d_smoke "$resources"
+          ./spinelove_live2d_smoke "$resources" /tmp/module.ppm --module
 
       - name: Smoke test (offscreen)
         env:

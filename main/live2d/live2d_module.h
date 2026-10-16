@@ -1,11 +1,13 @@
 #ifndef SPINELOVE_LIVE2D_MODULE_H_
 #define SPINELOVE_LIVE2D_MODULE_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
 #include <array>
 
+#if defined(_WIN32)
 struct ID3D11Device;
 struct ID3D11DeviceContext;
 
@@ -13,9 +15,24 @@ namespace sl_d3d11
 {
 	class D3D11Renderer;
 }
+#else
+namespace sl_vk
+{
+	class VulkanRenderer;
+}
+#endif
 
 namespace live2d
 {
+	// Native handles the platform renderer is created from. On Linux these are
+	// the VkPhysicalDevice / VkDevice / VkQueue that Qt's QRhi already owns.
+	struct VulkanHandles
+	{
+		void* physicalDevice = nullptr;
+		void* device = nullptr;
+		void* queue = nullptr;
+		unsigned int queueFamily = 0;
+	};
 	struct ParameterState
 	{
 		std::string id;
@@ -80,7 +97,11 @@ namespace live2d
 		Live2DModule(const Live2DModule&) = delete;
 		Live2DModule& operator=(const Live2DModule&) = delete;
 
+#if defined(_WIN32)
 		bool Initialize(ID3D11Device* device, ID3D11DeviceContext* context, sl_d3d11::D3D11Renderer* textureRenderer);
+#else
+		bool Initialize(const VulkanHandles& handles);
+#endif
 		void Shutdown() noexcept;
 		bool ImportModel(const std::wstring& manifestPath);
 		void Clear() noexcept;
@@ -146,6 +167,13 @@ namespace live2d
 
 		bool HasImportedModel() const noexcept;
 		bool RenderingBackendAvailable() const noexcept;
+#if !defined(_WIN32)
+		// VkImage of the most recently rendered target (0 when none). The Qt
+		// bridge hands this to QRhi so the QML scene can sample it.
+		std::uint64_t NativeRenderTargetImage() const noexcept;
+		int NativeRenderTargetWidth() const noexcept;
+		int NativeRenderTargetHeight() const noexcept;
+#endif
 		const std::wstring& ManifestPath() const noexcept;
 		const std::string& DisplayName() const noexcept;
 		const std::string& LastError() const noexcept;

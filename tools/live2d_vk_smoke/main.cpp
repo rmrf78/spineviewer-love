@@ -25,6 +25,7 @@
 #include "Model/CubismUserModel.hpp"
 #include "Rendering/Vulkan/CubismClass_Vulkan.hpp"
 #include "Rendering/Vulkan/CubismRenderer_Vulkan.hpp"
+#include "live2d/live2d_module.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -456,22 +457,173 @@ void WritePpm(const std::string& path, const std::vector<unsigned char>& rgba)
     }
 }
 
+// Copies an image back to host memory after moving it to the transfer layout.
+bool ReadBackImage(const VulkanContext& context, VkImage image, VkImageLayout currentLayout,
+                   std::vector<unsigned char>& pixels)
+{
+    const VkDeviceSize byteCount = VkDeviceSize(kWidth) * VkDeviceSize(kHeight) * 4;
+
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = byteCount;
+    bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    VkBuffer readback = VK_NULL_HANDLE;
+    if (vkCreateBuffer(context.device, &bufferInfo, nullptr, &readback) != VK_SUCCESS)
+        return false;
+
+    VkMemoryRequirements requirements{};
+    vkGetBufferMemoryRequirements(context.device, readback, &requirements);
+    VkMemoryAllocateInfo allocateInfo{};
+    allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocateInfo.allocationSize = requirements.size;
+    allocateInfo.memoryTypeIndex = FindMemoryType(context.physicalDevice, requirements.memoryTypeBits,
+                                                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+                                                      | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    VkDeviceMemory memory = VK_NULL_HANDLE;
+    if (allocateInfo.memoryTypeIndex == UINT32_MAX
+        || vkAllocateMemory(context.device, &allocateInfo, nullptr, &memory) != VK_SUCCESS
+        || vkBindBufferMemory(context.device, readback, memory, 0) != VK_SUCCESS)
+    {
+        vkDestroyBuffer(context.device, readback, nullptr);
+        return false;
+    }
+
+    VkCommandBuffer copy = BeginOneShot(context);
+    TransitionLayout(copy, image, currentLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                     VK_PIPELINE_STAGE_TRANSFER_BIT,
+                     VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT, VK_ACCESS_TRANSFER_READ_BIT);
+    VkBufferImageCopy region{};
+    region.imageSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+    region.imageExtent = {kWidth, kHeight, 1};
+    vkCmdCopyImageToBuffer(copy, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, readback, 1, &region);
+    EndOneShot(context, copy);
+
+    void* mapped = nullptr;
+    pixels.assign(static_cast<size_t>(byteCount), 0);
+    if (vkMapMemory(context.device, memory, 0, byteCount, 0, &mapped) == VK_SUCCESS)
+    {
+        std::memcpy(pixels.data(), mapped, static_cast<size_t>(byteCount));
+        vkUnmapMemory(context.device, memory);
+    }
+
+    vkDestroyBuffer(context.device, readback, nullptr);
+    vkFreeMemory(context.device, memory, nullptr);
+    return true;
+}
+
+size_t CountNonBackground(const std::vector<unsigned char>& pixels)
+{
+    size_t differing = 0;
+    for (size_t i = 0; i < pixels.size(); i += 4)
+    {
+        if (pixels[i] != pixels[0] || pixels[i + 1] != pixels[1]
+            || pixels[i + 2] != pixels[2] || pixels[i + 3] != pixels[3])
+            ++differing;
+    }
+    return differing;
+}
+
+// Exercises the real viewer module (main/live2d/live2d_module.cpp) instead of
+// driving the Cubism renderer by hand.
+int RunModulePath(const VulkanContext& context, const std::string& resourceDir, const std::string& outputPpm)
+{
+    live2d::Live2DModule module;
+    live2d::VulkanHandles handles;
+    handles.physicalDevice = context.physicalDevice;
+    handles.device = context.device;
+    handles.queue = context.queue;
+    handles.queueFamily = context.queueFamily;
+    if (!module.Initialize(handles))
+    {
+        std::fprintf(stderr, "Live2DModule::Initialize failed: %s\n", module.LastError().c_str());
+        return 1;
+    }
+
+    const std::string manifestUtf8 = resourceDir + "/Wanko/Wanko.model3.json";
+    const std::wstring manifest(manifestUtf8.begin(), manifestUtf8.end());
+    if (!module.ImportModel(manifest))
+    {
+        std::fprintf(stderr, "Live2DModule::ImportModel failed: %s\n", module.LastError().c_str());
+        return 1;
+    }
+
+    if (!module.TickAndRender(0.5f, kWidth, kHeight, 0.0f, 0.0f, true))
+    {
+        std::fprintf(stderr, "Live2DModule::TickAndRender failed: %s\n", module.LastError().c_str());
+        return 1;
+    }
+
+    const VkImage image = reinterpret_cast<VkImage>(
+        static_cast<std::uintptr_t>(module.NativeRenderTargetImage()));
+    if (image == VK_NULL_HANDLE
+        || module.NativeRenderTargetWidth() != kWidth || module.NativeRenderTargetHeight() != kHeight)
+    {
+        std::fprintf(stderr, "the module did not expose a %dx%d render target\n", kWidth, kHeight);
+        return 1;
+    }
+
+    std::vector<unsigned char> pixels;
+    if (!ReadBackImage(context, image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, pixels))
+    {
+        std::fprintf(stderr, "readback failed\n");
+        return 1;
+    }
+
+    const size_t differing = CountNonBackground(pixels);
+    const double coverage = 100.0 * static_cast<double>(differing) / static_cast<double>(kWidth * kHeight);
+    std::printf("live2d module smoke: %zu/%d pixels differ from the clear value (%.2f%%)\n",
+                differing, kWidth * kHeight, coverage);
+    if (!outputPpm.empty())
+        WritePpm(outputPpm, pixels);
+    if (differing == 0)
+    {
+        std::fprintf(stderr, "the module produced no visible pixels\n");
+        return 1;
+    }
+    return 0;
+}
+
 } // namespace
 
 int main(int argc, char** argv)
 {
     if (argc < 2)
     {
-        std::fprintf(stderr, "usage: %s <resource-dir> [output.ppm]\n", argv[0]);
+        std::fprintf(stderr, "usage: %s <resource-dir> [output.ppm] [--module]\n", argv[0]);
         return 2;
     }
-    const std::string resourceDir = argv[1];
+
+    bool moduleMode = false;
+    std::string resourceDir;
+    std::string outputPpm;
+    for (int i = 1; i < argc; ++i)
+    {
+        const std::string argument = argv[i];
+        if (argument == "--module")
+            moduleMode = true;
+        else if (resourceDir.empty())
+            resourceDir = argument;
+        else if (outputPpm.empty())
+            outputPpm = argument;
+    }
+
     const std::string mocPath = resourceDir + "/Wanko/Wanko.moc3";
     const std::string texturePath = resourceDir + "/Wanko/Wanko.1024/texture_00.png";
 
     VulkanContext context;
     if (!CreateVulkanContext(context))
         return 1;
+
+    if (moduleMode)
+    {
+        const int code = RunModulePath(context, resourceDir, outputPpm);
+        vkDestroyCommandPool(context.device, context.commandPool, nullptr);
+        vkDestroyDevice(context.device, nullptr);
+        vkDestroyInstance(context.instance, nullptr);
+        return code;
+    }
 
     VkImage colorImage = VK_NULL_HANDLE;
     VkDeviceMemory colorMemory = VK_NULL_HANDLE;
